@@ -80,7 +80,7 @@ docs/_build/
 docs/_prebuild/
 docs/examples/**
 docs/html_schemas/**
-# docs examples are copied from spsdk/examples
+# docs examples are copied from spsdk_refeyn/examples
 
 # PyBuilder
 target/

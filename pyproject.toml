@@ -1,81 +1,21 @@
 [project]
-name = "spsdk"
+name = "spsdk_refeyn"
 dynamic = ["dependencies", "version"]
 description = "Open Source Secure Provisioning SDK for NXP MCU/MPU"
 readme = "README.md"
-authors = [{name = "NXP", email = "michal.starecek@nxp.com"}]
+authors = [{name = "Refeyn", email = "viktor.verebelyi@refeyn.com"}]
 license = {text = "BSD-3-Clause"}
 requires-python = ">=3.9"
-classifiers = [
-	"Development Status :: 3 - Alpha",
-	"Programming Language :: Python :: 3 :: Only",
-	"Programming Language :: Python :: 3.9",
-	"Programming Language :: Python :: 3.10",
-	"Programming Language :: Python :: 3.11",
-	"Programming Language :: Python :: 3.12",
-	"Programming Language :: Python :: 3.13",
-	"Operating System :: POSIX :: Linux",
-	"Operating System :: Microsoft :: Windows",
-	"Operating System :: MacOS :: MacOS X",
-	"License :: OSI Approved :: BSD License",
-	"Topic :: Scientific/Engineering",
-	"Topic :: Software Development :: Embedded Systems",
-	"Topic :: System :: Hardware",
-	"Topic :: Utilities",
-]
 
 [tool.setuptools]
-packages = ["spsdk"]
+packages = ["spsdk_refeyn"]
 
 [tool.setuptools.dynamic]
 dependencies = { file = ["requirements.txt"] }
 
 [project.urls]
-"Code" = "https://github.com/NXPmicro/spsdk"
-"Issue tracker" = "https://github.com/NXPmicro/spsdk/issues"
+"Code" = "https://github.com/refeyn/spsdk"
 "Documentation" = "https://spsdk.readthedocs.io"
-
-[project.optional-dependencies]
-tp = ["pyscard==2.0.2"]
-examples = ["flask", "requests", "ipython", "notebook", "ipywidgets"]
-dk6 = ["pyftdi", "pylibftdi", "ftd2xx"]
-oscca = ["gmssl>=3.2,<4"]
-can = ["python-can<4.5,>=4.4"]
-pqc = ["spsdk-pqc<1.0,>=0.5.0"]
-all = [
-    "spsdk[tp]",
-    "spsdk[examples]",
-    "spsdk[dk6]",
-    "spsdk[oscca]",
-    "spsdk[can]",
-    "spsdk[pqc]",
-]
-
-[project.scripts]
-pfr = "spsdk.apps.pfr:safe_main"
-blhost = "spsdk.apps.blhost:safe_main"
-sdphost = "spsdk.apps.sdphost:safe_main"
-sdpshost = "spsdk.apps.sdpshost:safe_main"
-spsdk = "spsdk.apps.spsdk_apps:safe_main"
-nxpdebugmbox = "spsdk.apps.nxpdebugmbox:safe_main"
-nxpcrypto = "spsdk.apps.nxpcrypto:safe_main"
-nxpdevscan = "spsdk.apps.nxpdevscan:safe_main"
-nxpdevhsm = "spsdk.apps.nxpdevhsm:safe_main"
-nxpele = "spsdk.apps.nxpele:safe_main"
-nxpdice = "spsdk.apps.nxpdice:safe_main"
-nxpimage = "spsdk.apps.nxpimage:safe_main"
-nxpmemcfg = "spsdk.apps.nxpmemcfg:safe_main"
-nxpuuu = "spsdk.apps.nxpuuu:safe_main"
-nxpwpc = "spsdk.apps.nxpwpc:safe_main"
-shadowregs = "spsdk.apps.shadowregs:safe_main"
-nxpfuses = "spsdk.apps.nxpfuses:safe_main"
-ifr = "spsdk.apps.ifr:safe_main"
-tpconfig = "spsdk.apps.tpconfig:safe_main"
-tphost = "spsdk.apps.tphost:safe_main"
-dk6prog = "spsdk.apps.dk6prog:safe_main"
-el2go-host = "spsdk.apps.el2go:safe_main"
-lpcprog = "spsdk.apps.lpcprog:safe_main"
-
 
 [build-system]
 requires = ["setuptools_scm<8.2", "setuptools>=72.1,<74", "wheel"]
@@ -130,35 +70,21 @@ match = '(?!test_|__version__).*\.py'
 skips = ["B101", "B110", "B301", "B403", "B404", "B603"]
 
 [tool.setuptools_scm]
-version_file = "spsdk/__version__.py"
-version_scheme = "spsdk.versioning:run"
-git_describe_command = 'git describe --tags --long --match "v[0-9].*"'
+version_file = "spsdk_refeyn/__version__.py"
+version_scheme = "spsdk_refeyn.versioning:run"
 
 [tool.py_headers]
-excluded_files = ["docs/conf.py", "spsdk/__version__.py"]
+excluded_files = ["docs/conf.py", "spsdk_refeyn/__version__.py"]
 
 [tool.copyright]
 excluded_files = [
     "docs/conf.py",
     ".pre-commit-config.yaml",
     ".readthedocs.yml",
-    "spsdk/__version__.py",
+    "spsdk_refeyn/__version__.py",
 	".github/workflows/python-ci.yml",
 	".github/workflows/deploy.yml"
 ]
-
-
-[tool.gitcov]
-skip-files = ""
-repo-path = "."
-module = "spsdk"
-coverage-report = "reports/coverage.xml"
-coverage-cutoff = 0.8
-parent-branch = "origin/master"
-include-merges = 0
-verbose = 0
-debug = 0
-full-file-test = 0
 
 [tool.checker_jupiter]
 [tool.checker_jupiter.exceptions]
@@ -167,7 +93,7 @@ full-file-test = 0
 "examples/imx93/imx93_signed_ahab_uboot.ipynb" = [10]
 
 [tool.checker_dependencies]
-root_package = "spsdk"
+root_package = "spsdk_refeyn"
 [tool.checker_dependencies.spdx]
 
 "Apache-2.0" = [
@@ -195,38 +121,6 @@ root_package = "spsdk"
 "LGPL-2.1" = ["LGPL-2.1-or-later"]
 "ISC" = ["ISC license"]
 "Unlicense" = ["The Unlicense", "The Unlicense (Unlicense)"]
-
-[tool.nxp_codecheck]
-# Reports output directory
-git_parent_branch = "origin/master"
-output_directory = "reports"
-default_check_paths = ["spsdk", "tools"]
-jupyter_check_paths = ["examples"]
-
-checkers = [
-    { "pytest" = { timeout = 1200 } },
-    { "gitcov" = { info_only = true } },
-    {"pylint" = { timeout = 300 } },
-    { "mypy" = { timeout = 300 } },
-    "dependencies",
-    { "pydocstyle" = { timeout = 200 } },
-    "ruff",
-    { "radon_c" = { info_only = true, timeout = 60 } },
-    { "radon_d" = { timeout = 60 } },
-    { "black" = { timeout = 120 } },
-    { "isort" = { timeout = 60 } },
-    "copyright",
-    "py_headers",
-    { "cyclic" = { info_only = true, check_paths = [
-        "spsdk",
-    ] } },
-    { "cspell" = { info_only = true } },
-    { "bandit" = { info_only = true } },
-    { "black_nb" = { timeout = 120 } },
-    "isort_nb",
-    "jupyter",
-]
-
 
 [tool.release-tools]
 
@@ -259,11 +153,11 @@ spsdk_full_test_scope_ubuntu = { artifact_regex = ".*results.xml" }
 spsdk_full_test_scope_win10 = { artifact_regex = ".*results.xml" }
 spsdk_full_test_scope_win11 = { artifact_regex = ".*results.xml" }
 [tool.release-tools.blackduck.env]
-PROTEX_PROJECT_ID = "c_spsdk_automation_19733"
+PROTEX_PROJECT_ID = "c_spsdk_refeyn_automation_19733"
 PROTEX_TEMPLATE = "t_reportwithobligations_7215"
 
 [tool.release-tools.blackduck_sca]
-project_name = "spsdk"
+project_name = "spsdk_refeyn"
 include_detector_types = ["pip"]
 
 [tool.check-wheel-contents]
