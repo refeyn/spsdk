@@ -158,17 +158,6 @@ class Revisions(list[Features]):
     This class extends the built-in list to store and manage device revision Features.
     """
 
-    def revision_names(self, append_latest: bool = False) -> list[str]:
-        """Get a list of revision names.
-
-        :param append_latest: If True, append "latest" to the list of revision names.
-        :return: List of all supported device revision names.
-        """
-        ret = [rev.name for rev in self]
-        if append_latest:
-            ret.append("latest")
-        return ret
-
     def get(self, name: Optional[str] = None) -> Features:
         """Get the revision by its name.
 
@@ -645,10 +634,6 @@ class Device:
         """Less than comparison based on name."""
         return self.name < other.name
 
-    def get_features(self, revision: Optional[str] = None) -> list[str]:
-        """Get the list of device features."""
-        return [str(k) for k in self.revisions.get(revision).features.keys()]
-
     @staticmethod
     def _load_alias(name: str, db: "Database", dev_cfg: dict[str, Any]) -> "Device":
         """Loads the device from folder.
@@ -882,31 +867,6 @@ class DeviceQuickInfo:
         """List of available revisions."""
         return list(self.revision_features.keys())
 
-    def get_features(self, revision: Optional[str] = None) -> list[str]:
-        """List of all supported features of device."""
-        revision = revision or self.latest_rev
-        return list(self.revision_features[revision].keys())
-
-    def is_feature_supported(
-        self, feature: str, sub_feature: Optional[str] = None, revision: Optional[str] = None
-    ) -> bool:
-        """Return True if the feature is supported by devices.
-
-        :param feature: Feature name
-        :param sub_feature: Sub feature name to better granularity, defaults to None
-        :param revision: Specific device revision to check, defaults to latest revision
-        :return: True if the feature is supported by devices, False otherwise.
-        """
-        features = self.revision_features[revision or self.latest_rev]
-        if feature in features:
-            if sub_feature:
-                if features[feature] is None:
-                    return False
-                sub_features: list = features[feature] or []
-                return sub_feature in sub_features
-            return True
-        return False
-
 
 class DevicesQuickInfo:
     """List of all devices with their quick information."""
@@ -939,58 +899,6 @@ class DevicesQuickInfo:
         ret.predecessor_lookup = pl
 
         return ret
-
-    def get_feature_list(self, family: str, revision: Optional[str] = None) -> list[str]:
-        """Get features list.
-
-        If device is not used, the whole list of SPSDK features is returned
-
-        :param family: Family name
-        :param revision: Optional device revision
-        :returns: List of features.
-        """
-        if self.devices == {}:
-            return []
-        return self.devices[family.lower()].get_features(revision)
-
-    def get_devices_with_feature(
-        self, feature: str, sub_feature: Optional[str] = None
-    ) -> dict[str, list]:
-        """Get the list of all families that supports requested feature.
-
-        :param feature: Name of feature
-        :param sub_feature: Optional sub feature to better specify the families selection
-        :returns: List of devices that supports requested feature.
-        """
-        devices: dict[str, list] = {}
-        for name, info in self.devices.items():
-            for revision in info.revision_features.keys():
-                if info.is_feature_supported(feature, sub_feature, revision):
-                    if name not in devices:
-                        devices[name] = []
-                    devices[name].append(revision)
-        return dict(sorted(devices.items()))
-
-    def get_family_names(self) -> list[str]:
-        """Get the list of all families supported by SPSDK."""
-        devices = list(self.devices.keys())
-        devices.sort()
-        return devices
-
-    def get_predecessors(self, families: list[str]) -> dict[str, str]:
-        """Get the list of devices predecessors in previous SPSDK versions.
-
-        :param families: List of current family names
-        :returns: Dictionary mapping predecessor family names to current names
-        """
-        pr_names: dict[str, str] = {}
-        for family in families:
-            pr_name = self.devices[family.lower()].info.spsdk_predecessor_name
-            if pr_name is not None and pr_name not in pr_names:
-                assert isinstance(pr_name, str)
-                pr_names[pr_name] = family
-
-        return pr_names
 
     def is_predecessor_name(self, family: str) -> bool:
         """Check if device name is predecessor SPSDK device name.
