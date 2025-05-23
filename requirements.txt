@@ -1,6 +1,6 @@
 crcmod<2
 cryptography<45,>=42.0.0
-filelock<4,>=3.13.1
+filelock==3.13.1
 libusbsio<3,>=2.1.12
 packaging<26,>=23.0
 platformdirs<5,>=3.9.1
