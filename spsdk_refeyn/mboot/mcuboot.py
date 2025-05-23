@@ -493,6 +493,42 @@ class McuBoot:  # pylint: disable=too-many-public-methods
             raise McuBootError(f"Received invalid get-property response: {str(cmd_response)}")
         return None
 
+    def reset(self, timeout: int = 2000, reopen: bool = True) -> bool:
+        """Reset MCU and reconnect if enabled.
+
+        :param timeout: The maximal waiting time in [ms] for reopen connection
+        :param reopen: True for reopen connection after HW reset else False
+        :return: False in case of any problem; True otherwise
+        :raises McuBootError: if reopen is not supported
+        :raises McuBootConnectionError: Failure to reopen the device
+        """
+        logger.info("CMD: Reset MCU")
+        cmd_packet = CmdPacket(CommandTag.RESET, CommandFlag.NONE.tag)
+        ret_val = False
+        status = self._process_cmd(cmd_packet).status
+        self.close()
+        ret_val = True
+
+        if status not in [StatusCode.NO_RESPONSE, StatusCode.SUCCESS]:
+            ret_val = False
+            if self._cmd_exception:
+                raise McuBootConnectionError("Reset command failed")
+
+        if status == StatusCode.NO_RESPONSE:
+            logger.warning("Did not receive response from reset command, ignoring it")
+            self._status_code = StatusCode.SUCCESS.tag
+
+        if reopen:
+            time.sleep(timeout / 1000)
+            try:
+                self.open()
+            except SPSDKError as e:
+                ret_val = False
+                if self._cmd_exception:
+                    raise McuBootConnectionError("reopen failed") from e
+
+        return ret_val
+
     def configure_memory(self, address: int, mem_id: int) -> bool:
         """Configure memory.
 
