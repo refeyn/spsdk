@@ -9,7 +9,7 @@ import time
 from pathlib import Path
 from typing import Callable, Optional, Sequence
 
-from spsdk_refeyn.exceptions import SPSDKError
+from spsdk_refeyn.exceptions import SPSDKConnectionError, SPSDKError
 from spsdk_refeyn.mboot import MbootDeviceTypes
 from spsdk_refeyn.mboot.interfaces.uart import MbootUARTInterface
 from spsdk_refeyn.mboot.interfaces.usb import MbootUSBInterface
@@ -18,7 +18,7 @@ from spsdk_refeyn.sdp.interfaces.uart import SdpUARTInterface
 from spsdk_refeyn.sdp.interfaces.usb import SdpUSBInterface
 from spsdk_refeyn.sdp.sdp import SDP, SDPDeviceTypes
 
-IVT_FLASHLOADER = Path(r"ivt_flashloader.bin")
+IVT_FLASHLOADER = Path(r"dev\ivt_flashloader.bin")
 IVT_LOCATION = 0x20208200
 
 USE_UART = False
@@ -108,6 +108,22 @@ def flash_fw(file: Path) -> None:
             mb.write_memory(0x60000000, f.read())
 
 
+def reset_fw() -> None:
+    interfaces: Sequence[MbootDeviceTypes]
+    if USE_UART:
+        interfaces = MbootUARTInterface.scan("0x15a2:0x0073", timeout=5242000)
+    else:
+        interfaces = MbootUSBInterface.scan("0x15a2:0x0073", timeout=5242000)
+    if not interfaces:
+        raise SPSDKError("No USB interfaces found")
+    interface = interfaces[0]
+    try:
+        with McuBoot(interface) as mb:
+            mb.reset()
+    except SPSDKConnectionError:
+        ...
+
+
 logger = logging.getLogger()
 logging.basicConfig(level=logging.WARNING)
 
@@ -122,3 +138,4 @@ print(read_mem(0x6001E90C, 12))
 flash_fw(Path(r"dev\NXP_2.bin"))
 print("Reading 12 bytes from 0x6001e90c")
 print(read_mem(0x6001E90C, 12))
+reset_fw()
