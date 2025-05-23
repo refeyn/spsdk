@@ -5,6 +5,7 @@ types-setuptools<75.9
 types-pyyaml<6.1
 # codestyle
 black<25.2,>=24.3.0
+pylint
 # pip dependency should be moved to codecheck
 pip
 # developement/CI tools
