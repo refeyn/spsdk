@@ -66,6 +66,4 @@ class MemoryRegion:
         return f"Memory region, start: {hex(self.start)}"
 
     def __str__(self) -> str:
-        return (
-            f"0x{self.start:08X} - 0x{self.end:08X}; Total Size: {size_fmt(self.size)}"
-        )
+        return f"0x{self.start:08X} - 0x{self.end:08X}; Total Size: {size_fmt(self.size)}"

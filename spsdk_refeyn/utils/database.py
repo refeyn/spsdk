@@ -63,9 +63,7 @@ def get_spsdk_cache_dirname() -> str:
     """
     if SPSDK_CACHE_FOLDER:
         if not os.path.isabs(SPSDK_CACHE_FOLDER):
-            raise SPSDKValueError(
-                f"Invalid SPSDK_CACHE_FOLDER path: {SPSDK_CACHE_FOLDER}"
-            )
+            raise SPSDKValueError(f"Invalid SPSDK_CACHE_FOLDER path: {SPSDK_CACHE_FOLDER}")
         return SPSDK_CACHE_FOLDER
 
     return SPSDK_PLATFORM_DIRS.user_cache_dir
@@ -109,9 +107,7 @@ class Features:
         self.device = device
         self.features = features
 
-    def get_value(
-        self, feature: str, key: Union[list[str], str], default: Any = None
-    ) -> Any:
+    def get_value(self, feature: str, key: Union[list[str], str], default: Any = None) -> Any:
         """Get a value from the feature dictionary.
 
         :param feature: Feature name.
@@ -205,11 +201,7 @@ class UsbId:
         :param obj: Object to compare with
         :return: True if obj is a UsbId instance with matching vid and pid, False otherwise
         """
-        return (
-            isinstance(obj, self.__class__)
-            and self.vid == obj.vid
-            and self.pid == obj.pid
-        )
+        return isinstance(obj, self.__class__) and self.vid == obj.vid and self.pid == obj.pid
 
     def update(self, usb_config: dict) -> None:
         """Update the USB ID from a configuration dictionary.
@@ -371,9 +363,7 @@ class MemBlock:
         return value_to_bool(self.description.get("external", False))
 
     @classmethod
-    def parse_name(
-        cls, name: str
-    ) -> tuple[Optional[str], str, Optional[int], Optional[bool]]:
+    def parse_name(cls, name: str) -> tuple[Optional[str], str, Optional[int], Optional[bool]]:
         """Parse name to base elements.
 
         :param name: Name of the memory block.
@@ -404,9 +394,7 @@ class MemBlock:
             raw_name = name[ix + 1 : ix_2nd]
             raw_security = name[ix_2nd + 1 :]
             if raw_security not in cls.SECURITY:
-                raise SPSDKError(
-                    f"Invalid security flag in memory block name: {raw_security}"
-                )
+                raise SPSDKError(f"Invalid security flag in memory block name: {raw_security}")
         else:
             raise SPSDKError(f"Database memory block parse name failed on: {name}")
         regex = re.compile(r"(?P<value>[a-zA-Z\-]+)(?P<instance>\d+)?")
@@ -579,9 +567,7 @@ class DeviceInfo:
             "spsdk_predecessor_name", self.spsdk_predecessor_name
         )
         self.web = config.get("web", self.web)
-        self.memory_map = MemMap.load(
-            config.get("memory_map", self.memory_map._mem_map)
-        )
+        self.memory_map = MemMap.load(config.get("memory_map", self.memory_map._mem_map))
         self.isp.update(config.get("isp", {}))
 
 
@@ -750,9 +736,7 @@ class Device:
                 f"The latest revision defined in database for {name} is not in supported revisions"
             )
 
-        ret = Device(
-            name=name, db=db, info=dev_info, latest_rev=latest, device_alias=None
-        )
+        ret = Device(name=name, db=db, info=dev_info, latest_rev=latest, device_alias=None)
 
         for rev, rev_updates in dev_revisions.items():
             features = deepcopy(dev_features)
@@ -957,9 +941,7 @@ class FeaturesQuickData:
                     if "mem_types" in ret.features[name]:
                         # remove redundancies
                         ret.features[name]["mem_types"] = list(
-                            set(
-                                ret.features[name]["mem_types"] + list(mem_types.keys())
-                            )
+                            set(ret.features[name]["mem_types"] + list(mem_types.keys()))
                         )
                     else:
                         ret.features[name]["mem_types"] = list(mem_types.keys())
@@ -1034,9 +1016,7 @@ class Database:
                             restricted_data_path=restricted_data_path,
                             addons_data_path=addons_data_path,
                         )
-                        logger.debug(
-                            f"Current database finger print hash: {db_hash.hex()}"
-                        )
+                        logger.debug(f"Current database finger print hash: {db_hash.hex()}")
 
                         if db_hash != loaded_db_data.db_hash:
                             loaded_db_data = None
@@ -1045,9 +1025,7 @@ class Database:
                             )
                             os.remove(db_cache_file_name)
                         else:
-                            logger.debug(
-                                f"Loaded database from cache: {db_cache_file_name}"
-                            )
+                            logger.debug(f"Loaded database from cache: {db_cache_file_name}")
                             self.db_hash = db_hash
                     except (
                         SPSDKError,
@@ -1068,13 +1046,9 @@ class Database:
                 if os.path.exists(r_defaults_path):
                     defaults_path = r_defaults_path
 
-            self.cfg_cache: dict[str, Any] = (
-                loaded_db_data.cfg_cache if loaded_db_data else {}
-            )
+            self.cfg_cache: dict[str, Any] = loaded_db_data.cfg_cache if loaded_db_data else {}
             self.defaults = (
-                loaded_db_data.defaults
-                if loaded_db_data
-                else load_configuration(defaults_path)
+                loaded_db_data.defaults if loaded_db_data else load_configuration(defaults_path)
             )
 
         def make_cache(self) -> None:
@@ -1128,9 +1102,7 @@ class Database:
             data_folder = path.lower()
             cache_name = (
                 "db_data_"
-                + get_hash(data_folder.encode(), algorithm=EnumHashAlgorithm.SHA1)[
-                    :6
-                ].hex()
+                + get_hash(data_folder.encode(), algorithm=EnumHashAlgorithm.SHA1)[:6].hex()
                 + "_"
                 + str(spsdk_refeyn.version)
                 + ".cache"
@@ -1199,9 +1171,7 @@ class Database:
         if complete_load:
             self._devices.load_devices_from_path(os.path.join(path, "devices"))
             if restricted_data_path:
-                self._devices.load_devices_from_path(
-                    os.path.join(restricted_data_path, "devices")
-                )
+                self._devices.load_devices_from_path(os.path.join(restricted_data_path, "devices"))
 
         # optional Database hash that could be used for identification of consistency
         self.db_hash = bytes()
@@ -1268,9 +1238,7 @@ class Database:
         :param feature: Requested feature.
         :return: Loaded dictionary of JSON Schema file.
         """
-        path = self.get_data_file_path(
-            os.path.join("jsonschemas", f"sch_{feature}.yaml")
-        )
+        path = self.get_data_file_path(os.path.join("jsonschemas", f"sch_{feature}.yaml"))
         return DatabaseManager().db.load_db_cfg_file(path)
 
     def get_common_data_file_path(self, path: str) -> str:
@@ -1392,9 +1360,7 @@ class DatabaseManager:
             return None
         database_path = os.path.join(SPSDK_RESTRICTED_DATA_FOLDER, "data")
         if not os.path.exists(database_path):
-            logger.error(
-                f"The restricted data doesn't contain data folder: {database_path}"
-            )
+            logger.error(f"The restricted data doesn't contain data folder: {database_path}")
             return None
         return database_path
 
@@ -1405,9 +1371,7 @@ class DatabaseManager:
         :return: Database cache file name.
         """
         cache_folder = get_spsdk_cache_dirname()
-        return os.path.join(
-            cache_folder, f"db_quick_info_{spsdk_refeyn.version}.cache"
-        )
+        return os.path.join(cache_folder, f"db_quick_info_{spsdk_refeyn.version}.cache")
 
     @classmethod
     def _get_quick_info_db(cls) -> QuickDatabase:

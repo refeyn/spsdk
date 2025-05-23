@@ -84,9 +84,7 @@ class UsbDevice(DeviceBase):
             self._device.Open(self.path)
             self._opened = True
         except Exception as error:
-            raise SPSDKConnectionError(
-                f"Unable to open device '{str(self)}'"
-            ) from error
+            raise SPSDKConnectionError(f"Unable to open device '{str(self)}'") from error
 
     def close(self) -> None:
         """Close the interface.
@@ -100,9 +98,7 @@ class UsbDevice(DeviceBase):
                 self._device.Close()
                 self._opened = False
             except Exception as error:
-                raise SPSDKConnectionError(
-                    f"Unable to close device '{str(self)}'"
-                ) from error
+                raise SPSDKConnectionError(f"Unable to close device '{str(self)}'") from error
 
     def read(self, length: int, timeout: Optional[int] = None) -> bytes:
         """Read data on the IN endpoint associated to the HID interface.
@@ -179,9 +175,7 @@ class UsbDevice(DeviceBase):
         :param timeout: Read/write timeout
         :return: list of matching RawHid devices
         """
-        usb_filter = NXPUSBDeviceFilter(
-            usb_id=device_id, nxp_device_names=usb_devices_filter
-        )
+        usb_filter = NXPUSBDeviceFilter(usb_id=device_id, nxp_device_names=usb_devices_filter)
         devices = cls.enumerate(usb_filter, timeout=timeout)
         return devices
 

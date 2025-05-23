@@ -19,10 +19,7 @@ from typing_extensions import Self
 from spsdk_refeyn.crypto.crc import CrcAlg, from_crc_algorithm
 from spsdk_refeyn.exceptions import SPSDKAttributeError
 from spsdk_refeyn.mboot.commands import CmdResponse, parse_cmd_response
-from spsdk_refeyn.mboot.exceptions import (
-    McuBootConnectionError,
-    McuBootDataAbortError,
-)
+from spsdk_refeyn.mboot.exceptions import McuBootConnectionError, McuBootDataAbortError
 from spsdk_refeyn.mboot.protocol.base import MbootProtocolBase
 from spsdk_refeyn.utils.interfaces.commands import CmdPacketBase
 from spsdk_refeyn.utils.misc import Endianness, Timeout
@@ -227,9 +224,7 @@ class MbootSerialProtocol(MbootProtocolBase):
                 return header
         raise McuBootConnectionError(f"No data received in {self.device.timeout} ms")
 
-    def _read_frame_header(
-        self, expected_frame_type: Optional[FPType] = None
-    ) -> tuple[int, int]:
+    def _read_frame_header(self, expected_frame_type: Optional[FPType] = None) -> tuple[int, int]:
         """Read frame header and frame type. Return them as tuple of integers.
 
         :param expected_frame_type: Check if the frame_type is exactly as expected
@@ -318,9 +313,7 @@ class MbootSerialProtocol(MbootProtocolBase):
             self.options = response.options
 
     @contextmanager
-    def ping_timeout(
-        self, timeout: int = PING_TIMEOUT_MS
-    ) -> Generator[None, None, None]:
+    def ping_timeout(self, timeout: int = PING_TIMEOUT_MS) -> Generator[None, None, None]:
         """Context manager for changing UART's timeout.
 
         :param timeout: New temporary timeout in milliseconds, defaults to PING_TIMEOUT_MS (500ms)

@@ -261,9 +261,7 @@ class PropertyValueBase:
 
     __slots__ = ("tag", "name", "desc")
 
-    def __init__(
-        self, tag: int, name: Optional[str] = None, desc: Optional[str] = None
-    ) -> None:
+    def __init__(self, tag: int, name: Optional[str] = None, desc: Optional[str] = None) -> None:
         """Initialize the base of property.
 
         :param tag: Property tag, see: `PropertyTag`
@@ -296,9 +294,7 @@ class IntValue(PropertyValueBase):
         "_fmt",
     )
 
-    def __init__(
-        self, tag: int, raw_values: list[int], str_format: str = "dec"
-    ) -> None:
+    def __init__(self, tag: int, raw_values: list[int], str_format: str = "dec") -> None:
         """Initialize the integer-based property object.
 
         :param tag: Property tag, see: `PropertyTag`
@@ -393,9 +389,7 @@ class BoolValue(PropertyValueBase):
 
     def to_str(self) -> str:
         """Get stringified property representation."""
-        return (
-            self._true_string if self.value in self._true_values else self._false_string
-        )
+        return self._true_string if self.value in self._true_values else self._false_string
 
 
 class EnumValue(PropertyValueBase):
@@ -470,10 +464,7 @@ class DeviceUidValue(PropertyValueBase):
         """
         super().__init__(tag)
         self.value = b"".join(
-            [
-                int.to_bytes(val, length=4, byteorder=Endianness.LITTLE.value)
-                for val in raw_values
-            ]
+            [int.to_bytes(val, length=4, byteorder=Endianness.LITTLE.value) for val in raw_values]
         )
 
     def to_int(self) -> int:
@@ -508,9 +499,7 @@ class ReservedRegionsValue(PropertyValueBase):
 
     def to_str(self) -> str:
         """Get stringified property representation."""
-        return "\n".join(
-            [f"    Region {i}: {region}" for i, region in enumerate(self.regions)]
-        )
+        return "\n".join([f"    Region {i}: {region}" for i, region in enumerate(self.regions)])
 
 
 class AvailablePeripheralsValue(PropertyValueBase):
@@ -611,7 +600,9 @@ class IrqNotifierPinValue(PropertyValueBase):
 
     def to_str(self) -> str:
         """Get stringified property representation."""
-        return f"IRQ Port[{self.port}], Pin[{self.pin}] is {'enabled' if self.enabled else 'disabled'}"
+        return (
+            f"IRQ Port[{self.port}], Pin[{self.pin}] is {'enabled' if self.enabled else 'disabled'}"
+        )
 
 
 class ExternalMemoryAttributesValue(PropertyValueBase):
@@ -640,19 +631,11 @@ class ExternalMemoryAttributesValue(PropertyValueBase):
             raw_values[1] if raw_values[0] & ExtMemPropTags.START_ADDRESS.tag else None
         )
         self.total_size = (
-            raw_values[2] * 1024
-            if raw_values[0] & ExtMemPropTags.SIZE_IN_KBYTES.tag
-            else None
+            raw_values[2] * 1024 if raw_values[0] & ExtMemPropTags.SIZE_IN_KBYTES.tag else None
         )
-        self.page_size = (
-            raw_values[3] if raw_values[0] & ExtMemPropTags.PAGE_SIZE.tag else None
-        )
-        self.sector_size = (
-            raw_values[4] if raw_values[0] & ExtMemPropTags.SECTOR_SIZE.tag else None
-        )
-        self.block_size = (
-            raw_values[5] if raw_values[0] & ExtMemPropTags.BLOCK_SIZE.tag else None
-        )
+        self.page_size = raw_values[3] if raw_values[0] & ExtMemPropTags.PAGE_SIZE.tag else None
+        self.sector_size = raw_values[4] if raw_values[0] & ExtMemPropTags.SECTOR_SIZE.tag else None
+        self.block_size = raw_values[5] if raw_values[0] & ExtMemPropTags.BLOCK_SIZE.tag else None
         self.value = raw_values[0]
 
     def to_str(self) -> str:
@@ -971,25 +954,19 @@ def parse_property_value(
     overridden_series = None
     if family:
         db = get_db(family)
-        overridden_series = db.get_str(
-            DatabaseManager().BLHOST, "overridden_properties", ""
-        )
+        overridden_series = db.get_str(DatabaseManager().BLHOST, "overridden_properties", "")
     if overridden_series:
         properties_dict.update(PROPERTIES_OVERRIDE[overridden_series])
     if property_tag not in list(properties_dict.keys()):
         property_tag = PropertyTag.UNKNOWN.tag
-    property_value = next(
-        value for key, value in properties_dict.items() if key == property_tag
-    )
+    property_value = next(value for key, value in properties_dict.items() if key == property_tag)
     cls: Callable = property_value["class"]
     kwargs: dict = property_value["kwargs"]
     if "mem_id" in kwargs:
         kwargs["mem_id"] = ext_mem_id
     obj = cls(property_tag, raw_values, **kwargs)
     if overridden_series:
-        property_tag_override = PROPERTY_TAG_OVERRIDE[overridden_series].from_tag(
-            property_tag
-        )
+        property_tag_override = PROPERTY_TAG_OVERRIDE[overridden_series].from_tag(property_tag)
         obj.name = property_tag_override.label
         obj.desc = property_tag_override.description
     return obj  # type:ignore[no-any-return]
@@ -1002,8 +979,6 @@ def get_property_tag_label(mboot_property: Union[PropertyTag, int]) -> tuple[int
             prop = PropertyTag.from_tag(mboot_property)
             return prop.tag, prop.label
         except SPSDKKeyError:
-            logger.warning(
-                f"Unknown property id: {mboot_property} ({hex(mboot_property)})"
-            )
+            logger.warning(f"Unknown property id: {mboot_property} ({hex(mboot_property)})")
             return mboot_property, "Unknown"
     return mboot_property.tag, mboot_property.label

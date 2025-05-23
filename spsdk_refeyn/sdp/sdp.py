@@ -222,17 +222,13 @@ class SDP:
         :param data_format: Register access format 8, 16, 32 bits
         :return: Return bytes if success else None.
         """
-        logger.info(
-            f"TX-CMD: Read(address=0x{address:08X}, length={length}, format={data_format})"
-        )
+        logger.info(f"TX-CMD: Read(address=0x{address:08X}, length={length}, format={data_format})")
         cmd_packet = CmdPacket(CommandTag.READ_REGISTER, address, data_format, length)
         if self._process_cmd(cmd_packet):
             return self._read_data(length)
         return None
 
-    def write(
-        self, address: int, value: int, count: int = 4, data_format: int = 32
-    ) -> bool:
+    def write(self, address: int, value: int, count: int = 4, data_format: int = 32) -> bool:
         """Write value into reg/mem at specified address.
 
         :param address: Start address of first register
@@ -245,9 +241,7 @@ class SDP:
         logger.info(
             f"TX-CMD: Write(address=0x{address:08X}, value=0x{value:08X}, count={count}, format={data_format})"
         )
-        cmd_packet = CmdPacket(
-            CommandTag.WRITE_REGISTER, address, data_format, count, value
-        )
+        cmd_packet = CmdPacket(CommandTag.WRITE_REGISTER, address, data_format, count, value)
         if not self._process_cmd(cmd_packet):
             return False
         status = self._read_status()

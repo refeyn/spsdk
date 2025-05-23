@@ -13,10 +13,7 @@ from typing import Optional, Union
 
 from spsdk_refeyn.exceptions import SPSDKAttributeError
 from spsdk_refeyn.mboot.commands import CmdResponse, parse_cmd_response
-from spsdk_refeyn.mboot.exceptions import (
-    McuBootConnectionError,
-    McuBootDataAbortError,
-)
+from spsdk_refeyn.mboot.exceptions import McuBootConnectionError, McuBootDataAbortError
 from spsdk_refeyn.mboot.protocol.base import MbootProtocolBase
 from spsdk_refeyn.utils.exceptions import SPSDKTimeoutError
 from spsdk_refeyn.utils.interfaces.commands import CmdPacketBase

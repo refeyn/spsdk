@@ -49,14 +49,18 @@ jobs:
         run: |
           pip install -r requirements-develop.txt
  
-      - name: Run Codecheck
+      - name: Run black
         run: |
-          # Ignoring the 'COPYRIGHT' check as the year of merge to Github may differ from the actual year when the file was updated 
-          codecheck -s --output reports_codecheck --info-check gitcov  --info-check COPYRIGHT
+          black spsdk_refeyn --check
+ 
+      - name: Run isort
+        run: |
+          isort spsdk_refeyn --settings-file pyproject.toml --check
 
-      - name: Archive Results
-        uses: actions/upload-artifact@v4
-        with:
-          name: Results-${{ matrix.python-version }}-${{ matrix.os }}
-          path: reports_codecheck
-        if: always() && job.status == 'failure'
+      - name: Run pylint
+        run: |
+          pylint spsdk_refeyn -j 2
+
+      - name: Run mypy
+        run: |
+          mypy spsdk_refeyn

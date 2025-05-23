@@ -1,17 +1,28 @@
-# See https://pre-commit.com for more information
-# See https://pre-commit.com/hooks.html for more hooks
+fail_fast: true
 repos:
   - repo: local
     hooks:
-      - id: copyright-year
-        name: Check this year's Copyright
-        entry: python tools/checker_copyright_year.py
-        language: system
-  - repo: https://github.com/psf/black
-    rev: 23.1.0
-    hooks:
       - id: black
-  - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
-    hooks:
+        name: black
+        entry: venv/Scripts/black.exe
+        language: system
+        types_or: [python, jupyter]
       - id: isort
+        name: isort
+        entry: venv/Scripts/isort.exe --settings-file pyproject.toml
+        files: ^(spsdk_refeyn)/
+        language: system
+        types: [python]
+      - id: pylint
+        name: pylint
+        entry: venv/Scripts/pylint.exe
+        language: system
+        types: [python]
+        files: ^(spsdk_refeyn)/
+      - id: mypy
+        name: mypy
+        entry: venv/Scripts/mypy.exe
+        language: system
+        types: [python]
+        files: ^(spsdk_refeyn)/
+        require_serial: true

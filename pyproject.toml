@@ -1,7 +1,7 @@
 [project]
 name = "spsdk_refeyn"
 dynamic = ["dependencies", "version"]
-description = "Open Source Secure Provisioning SDK for NXP MCU/MPU"
+description = "Slimmed down version of the Open Source Secure Provisioning SDK for NXP MCU/MPU"
 readme = "README.md"
 authors = [{name = "Refeyn", email = "viktor.verebelyi@refeyn.com"}]
 license = {text = "BSD-3-Clause"}
@@ -40,60 +40,10 @@ disallow_untyped_defs = true
 ignore_missing_imports = true
 warn_unused_ignores = false
 
-[tool.pytest.ini_options]
-junit_family = "xunit1"
-
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "raise NotImplementedError()",
-    "raise SPSDKErrorImplemented()",
-    "safe_main()",
-    "sys.exit(main())",
-]
-
-[tool.coverage.run]
-relative_files = true
-
-[tool.pydocstyle]
-convention = "google"
-add_ignore = "D105,D301"
-match = '(?!test_|__version__).*\.py'
-
-[tool.bandit]
-# B101: Use of assert
-# B110: Try, Except, Pass detected
-# B301: pickle
-# B403: import pickle
-# B404: import subprocess
-# B603: subprocess without shell=True
-skips = ["B101", "B110", "B301", "B403", "B404", "B603"]
-
 [tool.setuptools_scm]
 version_file = "spsdk_refeyn/__version__.py"
 version_scheme = "spsdk_refeyn.versioning:run"
 
-[tool.py_headers]
-excluded_files = ["docs/conf.py", "spsdk_refeyn/__version__.py"]
-
-[tool.copyright]
-excluded_files = [
-    "docs/conf.py",
-    ".pre-commit-config.yaml",
-    ".readthedocs.yml",
-    "spsdk_refeyn/__version__.py",
-	".github/workflows/python-ci.yml",
-	".github/workflows/deploy.yml"
-]
-
-[tool.checker_jupiter]
-[tool.checker_jupiter.exceptions]
-"examples/sdp/mx815_write_file.ipynb" = [1]
-"examples/imx93/imx93_ahab_uboot.ipynb" = [10]
-"examples/imx93/imx93_signed_ahab_uboot.ipynb" = [10]
-
-[tool.checker_dependencies]
-root_package = "spsdk_refeyn"
 [tool.checker_dependencies.spdx]
 
 "Apache-2.0" = [
@@ -127,8 +77,6 @@ root_package = "spsdk_refeyn"
 [tool.release-tools.docs]
 install_hook = ['uv pip install ".[all]" -r docs/requirements.txt']
 docs_directory = "docs"
-# Disable JIRA upload due to artifacts size
-disable_jira_upload = true
 
 [tool.release-tools.clr]
 install_hook = ['uv pip install ".[all]"']
@@ -137,28 +85,6 @@ excluded_files = ["spsdk/__version__.py"]
 
 [tool.release-tools.scr]
 scr_file = "SW_Content_Register_SPSDK.txt"
-
-[tool.release-tools.testpypi]
-test_cmd = "spsdk --version"
-
-[tool.release-tools.test_artifacts_collector]
-install_hook = [
-    'uv pip install ".[all]"', 
-    'uv pip install -r requirements-develop.txt'
-]
-
-[tool.release-tools.test_artifacts_collector.jenkins_jobs]
-spsdk_full_test_scope_macos = { artifact_regex = ".*results.xml" }
-spsdk_full_test_scope_ubuntu = { artifact_regex = ".*results.xml" }
-spsdk_full_test_scope_win10 = { artifact_regex = ".*results.xml" }
-spsdk_full_test_scope_win11 = { artifact_regex = ".*results.xml" }
-[tool.release-tools.blackduck.env]
-PROTEX_PROJECT_ID = "c_spsdk_refeyn_automation_19733"
-PROTEX_TEMPLATE = "t_reportwithobligations_7215"
-
-[tool.release-tools.blackduck_sca]
-project_name = "spsdk_refeyn"
-include_detector_types = ["pip"]
 
 [tool.check-wheel-contents]
 ignore = "W002" # Wheel contains duplicate files

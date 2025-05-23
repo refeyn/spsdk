@@ -64,9 +64,7 @@ class CmdPacket(CmdPacketBase):
     FORMAT = ">HIB2IB"
     EMPTY_VALUE = 0x00
 
-    def __init__(
-        self, tag: CommandTag, address: int, pformat: int, count: int, value: int = 0
-    ):
+    def __init__(self, tag: CommandTag, address: int, pformat: int, count: int, value: int = 0):
         """Initialize the struct.
 
         :param tag: Tag number representing the command
@@ -90,9 +88,7 @@ class CmdPacket(CmdPacketBase):
 
     def to_bytes(self, padding: bool = True) -> bytes:
         """Return command packet as bytes."""
-        return pack(
-            self.FORMAT, self.tag, self.address, self.format, self.count, self.value, 0
-        )
+        return pack(self.FORMAT, self.tag, self.address, self.format, self.count, self.value, 0)
 
 
 class CmdResponse(CmdResponseBase):

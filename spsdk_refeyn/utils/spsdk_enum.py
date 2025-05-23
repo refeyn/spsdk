@@ -75,9 +75,7 @@ class SpsdkEnum(SpsdkEnumMember, Enum):
         for item in cls.__members__.values():
             if item.tag == tag:
                 return item
-        raise SPSDKKeyError(
-            f"There is no {cls.__name__} item in with tag {tag} defined"
-        )
+        raise SPSDKKeyError(f"There is no {cls.__name__} item in with tag {tag} defined")
 
     @classmethod
     def from_label(cls, label: str) -> Self:
@@ -92,6 +90,4 @@ class SpsdkEnum(SpsdkEnumMember, Enum):
         for item in cls.__members__.values():
             if item.label.upper() == label.upper():
                 return item
-        raise SPSDKKeyError(
-            f"There is no {cls.__name__} item with label {label} defined"
-        )
+        raise SPSDKKeyError(f"There is no {cls.__name__} item with label {label} defined")

@@ -129,9 +129,7 @@ def load_file(
         return f.read()  # type: ignore[no-any-return]
 
 
-def write_file(
-    data: Union[str, bytes], path: str, mode: str = "w", encoding: str = "utf-8"
-) -> int:
+def write_file(data: Union[str, bytes], path: str, mode: str = "w", encoding: str = "utf-8") -> int:
     """Writes data into a file.
 
     :param data: data to write
@@ -159,9 +157,7 @@ def get_abs_path(file_path: str, base_dir: Optional[str] = None) -> str:
     if os.path.isabs(file_path):
         return file_path.replace("\\", "/")
 
-    return os.path.abspath(os.path.join(base_dir or os.getcwd(), file_path)).replace(
-        "\\", "/"
-    )
+    return os.path.abspath(os.path.join(base_dir or os.getcwd(), file_path)).replace("\\", "/")
 
 
 def _find_path(
@@ -240,9 +236,7 @@ def find_file(
     )
 
 
-def value_to_int(
-    value: Union[bytes, bytearray, int, str], default: Optional[int] = None
-) -> int:
+def value_to_int(value: Union[bytes, bytearray, int, str], default: Optional[int] = None) -> int:
     """Function loads value from lot of formats to integer.
 
     :param value: Input value.
@@ -262,9 +256,7 @@ def value_to_int(
             value.strip().lower(),
         )
         if match:
-            base = {"0b": 2, "0o": 8, "0": 10, "0x": 16, None: 10}[
-                match.group("prefix")
-            ]
+            base = {"0b": 2, "0o": 8, "0": 10, "0x": 16, None: 10}[match.group("prefix")]
             try:
                 return int(match.group("number"), base=base)
             except ValueError:
