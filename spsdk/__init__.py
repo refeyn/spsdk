@@ -16,6 +16,7 @@ The library allows the user to
     - providing security operations.
 It is delivered in a form of python library with functionality presented as CLI or GUI utilities.
 """
+
 import os
 import sys
 
@@ -44,9 +45,10 @@ class SPSDKPlatformDirs(PlatformDirs):
         """Cache directory tied to the user."""
         if sys.platform != "win32":
             return super().user_cache_dir
-        path = os.path.join(self.user_data_dir, "Cache")
-        self._optionally_create_directory(path)
-        return path
+        else:
+            path = os.path.join(self.user_data_dir, "Cache")
+            self._optionally_create_directory(path)
+            return path
 
 
 # The SPSDK behavior settings
@@ -76,10 +78,12 @@ SPSDK_RESTRICTED_DATA_FOLDER = os.environ.get(
 ) or os.environ.get("SPSDK_RESTRICTED_DATA_FOLDER")
 
 # SPSDK_ADDONS_DATA_FOLDER could be specified by the system variable in same schema as for standard data
-SPSDK_ADDONS_DATA_FOLDER_ENV_VERSION = "SPSDK_ADDONS_DATA_FOLDER_" + SPSDK_VERSION_FOLDER_SUFFIX
-SPSDK_ADDONS_DATA_FOLDER = os.environ.get(SPSDK_ADDONS_DATA_FOLDER_ENV_VERSION) or os.environ.get(
-    "SPSDK_ADDONS_DATA_FOLDER"
+SPSDK_ADDONS_DATA_FOLDER_ENV_VERSION = (
+    "SPSDK_ADDONS_DATA_FOLDER_" + SPSDK_VERSION_FOLDER_SUFFIX
 )
+SPSDK_ADDONS_DATA_FOLDER = os.environ.get(
+    SPSDK_ADDONS_DATA_FOLDER_ENV_VERSION
+) or os.environ.get("SPSDK_ADDONS_DATA_FOLDER")
 
 # SPSDK_CACHE_FOLDER could be specified by the system variable in same schema as for standard data
 SPSDK_CACHE_FOLDER_ENV_VERSION = "SPSDK_CACHE_FOLDER_" + SPSDK_VERSION_FOLDER_SUFFIX
@@ -105,7 +109,9 @@ SPSDK_YML_INDENT = 2
 ROOT_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
 SPSDK_EXAMPLES_FOLDER = os.path.abspath(os.path.join(ROOT_DIR, "examples"))
 
-SPSDK_DEBUG_LOGGING_DISABLED = value_to_bool(os.environ.get("SPSDK_DEBUG_LOGGING_DISABLED"))
+SPSDK_DEBUG_LOGGING_DISABLED = value_to_bool(
+    os.environ.get("SPSDK_DEBUG_LOGGING_DISABLED")
+)
 SPSDK_DEBUG_LOG_FILE = os.environ.get(
     "SPSDK_DEBUG_LOG_FILE", os.path.join(SPSDK_PLATFORM_DIRS.user_log_dir, "debug.log")
 )

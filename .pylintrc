@@ -78,8 +78,7 @@ limit-inference-results=100
 # List of plugins (as comma separated values of python module names) to load,
 # usually to register additional checkers.
 load-plugins=pylint.extensions.docparams,
-             pylint.extensions.no_self_use,
-             spsdk_pylint_plugins
+             pylint.extensions.no_self_use
 
 # Pickle collected data for later comparisons.
 persistent=yes
@@ -114,7 +113,7 @@ disable=R,
         broad-exception-caught,
         unused-argument,
         abstract-method,
-		assert-instance
+        assert-instance
 enable=no-else-return,
        no-else-raise,
        simplifiable-if-expression,

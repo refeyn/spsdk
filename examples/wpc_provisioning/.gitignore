@@ -1,4 +1,0 @@
-config.yaml
-target_model/**/*.bin
-target_model/**/*.crt
-target_model/**/*.txt

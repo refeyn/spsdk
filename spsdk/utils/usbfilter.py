@@ -1,11 +1,13 @@
 #!/usr/bin/env python
-# -*- coding: UTF-8 -*-
-#
-# Copyright 2019-2024 NXP
-#
-# SPDX-License-Identifier: BSD-3-Clause
+# -----------------------------------------------------------------------------------------------------
+# Copyright (C) Refeyn Ltd - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+# URL: https://www.refeyn.com
+# -----------------------------------------------------------------------------------------------------
 
 """Module defining a USB filtering class."""
+
 import platform
 import re
 from typing import Any, Optional

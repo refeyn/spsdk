@@ -37,7 +37,10 @@ class MbootUSBInterface(MbootBulkProtocol):
         assert isinstance(self.device, UsbDevice)
         for name, usb_configs in self.get_devices().items():
             for usb_config in usb_configs:
-                if usb_config.vid == self.device.vid and usb_config.pid == self.device.pid:
+                if (
+                    usb_config.vid == self.device.vid
+                    and usb_config.pid == self.device.pid
+                ):
                     return name
         return "Unknown"
 

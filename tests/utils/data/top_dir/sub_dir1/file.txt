@@ -1,2 +1,0 @@
-path: top_dir/sub_dir1/file.txt
-used for find_file testing

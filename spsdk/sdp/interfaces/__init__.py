@@ -6,6 +6,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """Connection options for SDP."""
+
 from typing import Union
 
 from spsdk.sdp.interfaces.uart import SdpUARTInterface

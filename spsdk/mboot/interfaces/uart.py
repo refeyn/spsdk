@@ -7,6 +7,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """UART Mboot interface implementation."""
+
 import logging
 from typing import Optional
 

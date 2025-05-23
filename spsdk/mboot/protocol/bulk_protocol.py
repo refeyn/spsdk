@@ -6,13 +6,17 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """Mboot bulk implementation."""
+
 import logging
 from struct import pack, unpack_from
 from typing import Optional, Union
 
 from spsdk.exceptions import SPSDKAttributeError
 from spsdk.mboot.commands import CmdResponse, parse_cmd_response
-from spsdk.mboot.exceptions import McuBootConnectionError, McuBootDataAbortError
+from spsdk.mboot.exceptions import (
+    McuBootConnectionError,
+    McuBootDataAbortError,
+)
 from spsdk.mboot.protocol.base import MbootProtocolBase
 from spsdk.utils.exceptions import SPSDKTimeoutError
 from spsdk.utils.interfaces.commands import CmdPacketBase

@@ -115,7 +115,7 @@ class Version:
         :param value: Raw integer input
         """
         mark = (value >> 24) & 0xFF
-        self.mark = chr(mark) if 64 < mark < 91 else None  # type: ignore
+        self.mark = chr(mark) if 64 < mark < 91 else None  # type: ignore[assignment]
         self.major = (value >> 16) & 0xFF
         self.minor = (value >> 8) & 0xFF
         self.fixation = value & 0xFF
@@ -141,7 +141,7 @@ class Version:
         :return: Integer representation
         """
         value = self.major << 16 | self.minor << 8 | self.fixation
-        mark = 0 if no_mark or self.mark is None else ord(self.mark) << 24  # type: ignore
+        mark = 0 if no_mark or self.mark is None else ord(self.mark) << 24  # type: ignore[arg-type]
         return value | mark
 
     def to_str(self, no_mark: bool = False) -> str:
@@ -158,6 +158,7 @@ class Version:
 ########################################################################################################################
 # McuBoot Properties
 ########################################################################################################################
+
 
 # fmt: off
 class PropertyTag(SpsdkEnum):
@@ -260,7 +261,9 @@ class PropertyValueBase:
 
     __slots__ = ("tag", "name", "desc")
 
-    def __init__(self, tag: int, name: Optional[str] = None, desc: Optional[str] = None) -> None:
+    def __init__(
+        self, tag: int, name: Optional[str] = None, desc: Optional[str] = None
+    ) -> None:
         """Initialize the base of property.
 
         :param tag: Property tag, see: `PropertyTag`
@@ -293,7 +296,9 @@ class IntValue(PropertyValueBase):
         "_fmt",
     )
 
-    def __init__(self, tag: int, raw_values: list[int], str_format: str = "dec") -> None:
+    def __init__(
+        self, tag: int, raw_values: list[int], str_format: str = "dec"
+    ) -> None:
         """Initialize the integer-based property object.
 
         :param tag: Property tag, see: `PropertyTag`
@@ -319,7 +324,11 @@ class IntListValue(PropertyValueBase):
     __slots__ = ("value", "_fmt", "delimiter")
 
     def __init__(
-        self, tag: int, raw_values: list[int], str_format: str = "hex", delimiter: str = ", "
+        self,
+        tag: int,
+        raw_values: list[int],
+        str_format: str = "hex",
+        delimiter: str = ", ",
     ) -> None:
         """Initialize the integer-list-based property object.
 
@@ -384,7 +393,9 @@ class BoolValue(PropertyValueBase):
 
     def to_str(self) -> str:
         """Get stringified property representation."""
-        return self._true_string if self.value in self._true_values else self._false_string
+        return (
+            self._true_string if self.value in self._true_values else self._false_string
+        )
 
 
 class EnumValue(PropertyValueBase):
@@ -459,7 +470,10 @@ class DeviceUidValue(PropertyValueBase):
         """
         super().__init__(tag)
         self.value = b"".join(
-            [int.to_bytes(val, length=4, byteorder=Endianness.LITTLE.value) for val in raw_values]
+            [
+                int.to_bytes(val, length=4, byteorder=Endianness.LITTLE.value)
+                for val in raw_values
+            ]
         )
 
     def to_int(self) -> int:
@@ -494,7 +508,9 @@ class ReservedRegionsValue(PropertyValueBase):
 
     def to_str(self) -> str:
         """Get stringified property representation."""
-        return "\n".join([f"    Region {i}: {region}" for i, region in enumerate(self.regions)])
+        return "\n".join(
+            [f"    Region {i}: {region}" for i, region in enumerate(self.regions)]
+        )
 
 
 class AvailablePeripheralsValue(PropertyValueBase):
@@ -555,7 +571,7 @@ class AvailableCommandsValue(PropertyValueBase):
     def to_str(self) -> str:
         """Get stringified property representation."""
         return [
-            cmd_tag.label  # type: ignore
+            cmd_tag.label  # type: ignore[return-value]
             for cmd_tag in CommandTag
             if cmd_tag.tag > 0 and (1 << cmd_tag.tag - 1) & self.value
         ]
@@ -595,9 +611,7 @@ class IrqNotifierPinValue(PropertyValueBase):
 
     def to_str(self) -> str:
         """Get stringified property representation."""
-        return (
-            f"IRQ Port[{self.port}], Pin[{self.pin}] is {'enabled' if self.enabled else 'disabled'}"
-        )
+        return f"IRQ Port[{self.port}], Pin[{self.pin}] is {'enabled' if self.enabled else 'disabled'}"
 
 
 class ExternalMemoryAttributesValue(PropertyValueBase):
@@ -626,11 +640,19 @@ class ExternalMemoryAttributesValue(PropertyValueBase):
             raw_values[1] if raw_values[0] & ExtMemPropTags.START_ADDRESS.tag else None
         )
         self.total_size = (
-            raw_values[2] * 1024 if raw_values[0] & ExtMemPropTags.SIZE_IN_KBYTES.tag else None
+            raw_values[2] * 1024
+            if raw_values[0] & ExtMemPropTags.SIZE_IN_KBYTES.tag
+            else None
         )
-        self.page_size = raw_values[3] if raw_values[0] & ExtMemPropTags.PAGE_SIZE.tag else None
-        self.sector_size = raw_values[4] if raw_values[0] & ExtMemPropTags.SECTOR_SIZE.tag else None
-        self.block_size = raw_values[5] if raw_values[0] & ExtMemPropTags.BLOCK_SIZE.tag else None
+        self.page_size = (
+            raw_values[3] if raw_values[0] & ExtMemPropTags.PAGE_SIZE.tag else None
+        )
+        self.sector_size = (
+            raw_values[4] if raw_values[0] & ExtMemPropTags.SECTOR_SIZE.tag else None
+        )
+        self.block_size = (
+            raw_values[5] if raw_values[0] & ExtMemPropTags.BLOCK_SIZE.tag else None
+        )
         self.value = raw_values[0]
 
     def to_str(self) -> str:
@@ -726,16 +748,6 @@ class FuseLockedStatus(PropertyValueBase):
             msg += f"OTP Controller Program Locked Status {count} Register: {register}"
         return msg
 
-    def get_fuses(self) -> list[FuseLock]:
-        """Get list of fuses bitfield objects.
-
-        :return: list of FuseLockBitfield objects
-        """
-        fuses = []
-        for registers in self.fuses:
-            fuses.extend(registers.bitfields)
-        return fuses
-
 
 ########################################################################################################################
 # McuBoot property response parser
@@ -756,7 +768,10 @@ PROPERTIES: dict[int, dict] = {
         "class": IntValue,
         "kwargs": {"str_format": "size"},
     },
-    PropertyTag.FLASH_BLOCK_COUNT.tag: {"class": IntValue, "kwargs": {"str_format": "dec"}},
+    PropertyTag.FLASH_BLOCK_COUNT.tag: {
+        "class": IntValue,
+        "kwargs": {"str_format": "dec"},
+    },
     PropertyTag.AVAILABLE_COMMANDS.tag: {"class": AvailableCommandsValue, "kwargs": {}},
     PropertyTag.CRC_CHECK_STATUS.tag: {
         "class": EnumValue,
@@ -770,13 +785,19 @@ PROPERTIES: dict[int, dict] = {
         "class": EnumValue,
         "kwargs": {"enum": StatusCode, "na_msg": "Unknown Error"},
     },
-    PropertyTag.MAX_PACKET_SIZE.tag: {"class": IntValue, "kwargs": {"str_format": "size"}},
+    PropertyTag.MAX_PACKET_SIZE.tag: {
+        "class": IntValue,
+        "kwargs": {"str_format": "size"},
+    },
     PropertyTag.RESERVED_REGIONS.tag: {"class": ReservedRegionsValue, "kwargs": {}},
     PropertyTag.VALIDATE_REGIONS.tag: {
         "class": BoolValue,
         "kwargs": {"true_string": "ON", "false_string": "OFF"},
     },
-    PropertyTag.RAM_START_ADDRESS.tag: {"class": IntValue, "kwargs": {"str_format": "hex"}},
+    PropertyTag.RAM_START_ADDRESS.tag: {
+        "class": IntValue,
+        "kwargs": {"str_format": "hex"},
+    },
     PropertyTag.RAM_SIZE.tag: {"class": IntValue, "kwargs": {"str_format": "size"}},
     PropertyTag.SYSTEM_DEVICE_IDENT.tag: {
         "class": IntValue,
@@ -821,7 +842,10 @@ PROPERTIES: dict[int, dict] = {
         "class": EnumValue,
         "kwargs": {"enum": StatusCode, "na_msg": "Unknown Error"},
     },
-    PropertyTag.FLASH_PAGE_SIZE.tag: {"class": IntValue, "kwargs": {"str_format": "size"}},
+    PropertyTag.FLASH_PAGE_SIZE.tag: {
+        "class": IntValue,
+        "kwargs": {"str_format": "size"},
+    },
     PropertyTag.IRQ_NOTIFIER_PIN.tag: {"class": IrqNotifierPinValue, "kwargs": {}},
     PropertyTag.PFR_KEYSTORE_UPDATE_OPT.tag: {
         "class": EnumValue,
@@ -947,22 +971,28 @@ def parse_property_value(
     overridden_series = None
     if family:
         db = get_db(family)
-        overridden_series = db.get_str(DatabaseManager().BLHOST, "overridden_properties", "")
+        overridden_series = db.get_str(
+            DatabaseManager().BLHOST, "overridden_properties", ""
+        )
     if overridden_series:
         properties_dict.update(PROPERTIES_OVERRIDE[overridden_series])
     if property_tag not in list(properties_dict.keys()):
         property_tag = PropertyTag.UNKNOWN.tag
-    property_value = next(value for key, value in properties_dict.items() if key == property_tag)
+    property_value = next(
+        value for key, value in properties_dict.items() if key == property_tag
+    )
     cls: Callable = property_value["class"]
     kwargs: dict = property_value["kwargs"]
     if "mem_id" in kwargs:
         kwargs["mem_id"] = ext_mem_id
     obj = cls(property_tag, raw_values, **kwargs)
     if overridden_series:
-        property_tag_override = PROPERTY_TAG_OVERRIDE[overridden_series].from_tag(property_tag)
+        property_tag_override = PROPERTY_TAG_OVERRIDE[overridden_series].from_tag(
+            property_tag
+        )
         obj.name = property_tag_override.label
         obj.desc = property_tag_override.description
-    return obj
+    return obj  # type:ignore[no-any-return]
 
 
 def get_property_tag_label(mboot_property: Union[PropertyTag, int]) -> tuple[int, str]:
@@ -972,6 +1002,8 @@ def get_property_tag_label(mboot_property: Union[PropertyTag, int]) -> tuple[int
             prop = PropertyTag.from_tag(mboot_property)
             return prop.tag, prop.label
         except SPSDKKeyError:
-            logger.warning(f"Unknown property id: {mboot_property} ({hex(mboot_property)})")
+            logger.warning(
+                f"Unknown property id: {mboot_property} ({hex(mboot_property)})"
+            )
             return mboot_property, "Unknown"
     return mboot_property.tag, mboot_property.label

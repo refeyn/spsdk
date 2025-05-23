@@ -6,6 +6,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """SDP bulk implementation."""
+
 import logging
 from typing import Optional
 
@@ -46,7 +47,9 @@ class SDPBulkProtocol(SDPProtocolBase):
         :param data: Data to be sent
         """
         report_id, report_size, _ = HID_REPORT["DATA"]
-        frames = self._create_frames(data=data, report_id=report_id, report_size=report_size)
+        frames = self._create_frames(
+            data=data, report_id=report_id, report_size=report_size
+        )
         for frame in frames:
             self.device.write(frame)
 
@@ -60,7 +63,9 @@ class SDPBulkProtocol(SDPProtocolBase):
         if not data:
             raise SPSDKAttributeError("Incorrect packet type")
         report_id, report_size, _ = HID_REPORT["CMD"]
-        frames = self._create_frames(data=data, report_id=report_id, report_size=report_size)
+        frames = self._create_frames(
+            data=data, report_id=report_id, report_size=report_size
+        )
         for frame in frames:
             self.device.write(frame)
 
@@ -72,7 +77,9 @@ class SDPBulkProtocol(SDPProtocolBase):
         raw_data = self.device.read(1024)
         return self._decode_report(bytes(raw_data))
 
-    def _create_frames(self, data: bytes, report_id: int, report_size: int) -> list[bytes]:
+    def _create_frames(
+        self, data: bytes, report_id: int, report_size: int
+    ) -> list[bytes]:
         """Split the data into chunks of max size and encapsulate each of them .
 
         :param data: Data to send
@@ -84,7 +91,9 @@ class SDPBulkProtocol(SDPProtocolBase):
         data_index = 0
         while data_index < len(data):
             try:
-                raw_data, data_index = self._create_frame(data, report_id, report_size, data_index)
+                raw_data, data_index = self._create_frame(
+                    data, report_id, report_size, data_index
+                )
                 frames.append(raw_data)
             except Exception as e:
                 raise SPSDKConnectionError(str(e)) from e
@@ -118,12 +127,3 @@ class SDPBulkProtocol(SDPProtocolBase):
             raise SPSDKConnectionError("No data were received")
         logger.debug(f"IN [{len(raw_data)}]: {', '.join(f'{b:02X}' for b in raw_data)}")
         return CmdResponse(raw_data[0] == HID_REPORT["HAB"][0], raw_data[1:])
-
-    def configure(self, config: dict) -> None:
-        """Set HID report data.
-
-        :param config: parameters dictionary
-        """
-        if "hid_ep1" in config and "pack_size" in config:
-            HID_REPORT["CMD"] = (0x01, config["pack_size"], config["hid_ep1"])
-            HID_REPORT["DATA"] = (0x02, config["pack_size"], config["hid_ep1"])

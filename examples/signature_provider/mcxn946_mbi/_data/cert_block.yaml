@@ -1,8 +1,0 @@
-# Copyright 2023-2024 NXP
-#
-# SPDX-License-Identifier: BSD-3-Clause
-useIsk: false
-rootCertificate0File: hsm_k0_secp384r1.pub
-rootCertificate1File: hsm_k1_secp384r1.pub
-mainRootCertId: 0
-containerOutputFile: cert_block.bin

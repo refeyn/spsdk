@@ -14,6 +14,7 @@ from spsdk.utils.spsdk_enum import SpsdkEnum
 # McuBoot Status Codes (Errors)
 ########################################################################################################################
 
+
 # cspell:ignore WRAPP, GOOEM, GOSYM, GOIMPORT, KEYIN, KEYOUT, GOIMPORTTFM
 # pylint: disable=line-too-long
 # fmt: off

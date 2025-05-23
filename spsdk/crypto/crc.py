@@ -43,15 +43,6 @@ class Crc:
         self.final_xor = config.final_xor
         self.reverse = config.reverse
 
-    def verify(self, data: bytes, crc: int) -> bool:
-        """Verify if the given CRC matches the data.
-
-        :param data: Data for CRC calculation
-        :param crc: CRC checksum
-        :return: True if data match the checksum
-        """
-        return self.calculate(data) == crc
-
     def calculate(self, data: bytes) -> int:
         """Calculate CRC form given data.
 
@@ -64,7 +55,7 @@ class Crc:
             rev=self.reverse,
             xorOut=self.final_xor,
         )
-        return crc_func(data)
+        return crc_func(data)  # type: ignore[no-any-return]
 
 
 CRC_ALGORITHMS = {

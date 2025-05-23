@@ -18,9 +18,8 @@ import re
 import shutil
 import textwrap
 from copy import deepcopy
-from typing import Any, Iterator, Optional, Union
+from typing import Any, Optional, Union
 
-import prettytable
 from filelock import FileLock
 from typing_extensions import Self
 
@@ -35,7 +34,6 @@ from spsdk import (
     SPSDK_RESTRICTED_DATA_FOLDER,
     version,
 )
-from spsdk.apps.utils import spsdk_logger
 from spsdk.crypto.hash import EnumHashAlgorithm, Hash, get_hash
 from spsdk.exceptions import SPSDKError, SPSDKValueError
 from spsdk.utils.misc import (
@@ -65,7 +63,9 @@ def get_spsdk_cache_dirname() -> str:
     """
     if SPSDK_CACHE_FOLDER:
         if not os.path.isabs(SPSDK_CACHE_FOLDER):
-            raise SPSDKValueError(f"Invalid SPSDK_CACHE_FOLDER path: {SPSDK_CACHE_FOLDER}")
+            raise SPSDKValueError(
+                f"Invalid SPSDK_CACHE_FOLDER path: {SPSDK_CACHE_FOLDER}"
+            )
         return SPSDK_CACHE_FOLDER
 
     return SPSDK_PLATFORM_DIRS.user_cache_dir
@@ -91,7 +91,11 @@ class Features:
     """Represents a single device revision with its features."""
 
     def __init__(
-        self, name: str, is_latest: bool, device: "Device", features: dict[str, dict[str, Any]]
+        self,
+        name: str,
+        is_latest: bool,
+        device: "Device",
+        features: dict[str, dict[str, Any]],
     ) -> None:
         """Initialize a Features instance.
 
@@ -105,30 +109,9 @@ class Features:
         self.device = device
         self.features = features
 
-    def check_key(self, feature: str, key: Union[list[str], str]) -> bool:
-        """Check if the key exists in the database.
-
-        :param feature: Feature name.
-        :param key: Item key or key path as a list (e.g., ['grp1', 'grp2', 'key']).
-        :raises SPSDKValueError: If the feature is unsupported.
-        :return: True if the key exists, False otherwise.
-        """
-        if feature not in self.features:
-            raise SPSDKValueError(f"Unsupported feature: '{feature}'")
-        db_dict = self.features[feature]
-
-        if isinstance(key, list):
-            while len(key) > 1:
-                act_key = key.pop(0)
-                if act_key not in db_dict or not isinstance(db_dict[act_key], dict):
-                    return False
-                db_dict = db_dict[act_key]
-            key = key[0]
-
-        assert isinstance(key, str)
-        return key in db_dict
-
-    def get_value(self, feature: str, key: Union[list[str], str], default: Any = None) -> Any:
+    def get_value(
+        self, feature: str, key: Union[list[str], str], default: Any = None
+    ) -> Any:
         """Get a value from the feature dictionary.
 
         :param feature: Feature name.
@@ -158,32 +141,6 @@ class Features:
             raise SPSDKValueError(f"Unavailable item '{key}' in feature '{feature}'")
         return val
 
-    def get_bool(
-        self, feature: str, key: Union[list[str], str], default: Optional[bool] = None
-    ) -> bool:
-        """Get a boolean value from the feature dictionary.
-
-        :param feature: Feature name.
-        :param key: Item key or key path as a list (e.g., ['grp1', 'grp2', 'key']).
-        :param default: Default value if the key is missing.
-        :return: Boolean value from the feature dictionary.
-        """
-        val = self.get_value(feature, key, default)
-        return value_to_bool(val)
-
-    def get_int(
-        self, feature: str, key: Union[list[str], str], default: Optional[int] = None
-    ) -> int:
-        """Get an integer value from the feature dictionary.
-
-        :param feature: Feature name.
-        :param key: Item key or key path as a list (e.g., ['grp1', 'grp2', 'key']).
-        :param default: Default value if the key is missing.
-        :return: Integer value from the feature dictionary.
-        """
-        val = self.get_value(feature, key, default)
-        return value_to_int(val)
-
     def get_str(
         self, feature: str, key: Union[list[str], str], default: Optional[str] = None
     ) -> str:
@@ -198,69 +155,12 @@ class Features:
         assert isinstance(val, str)
         return val
 
-    def get_list(
-        self, feature: str, key: Union[list[str], str], default: Optional[list] = None
-    ) -> list[Any]:
-        """Get a list value from the feature dictionary.
-
-        :param feature: Feature name.
-        :param key: Item key or key path as a list (e.g., ['grp1', 'grp2', 'key']).
-        :param default: Default value if the key is missing.
-        :return: List value from the feature dictionary.
-        """
-        val = self.get_value(feature, key, default)
-        assert isinstance(val, list)
-        return val
-
-    def get_dict(
-        self, feature: str, key: Union[list[str], str], default: Optional[dict] = None
-    ) -> dict:
-        """Get a dictionary value from the feature dictionary.
-
-        :param feature: Feature name.
-        :param key: Item key or key path as a list (e.g., ['grp1', 'grp2', 'key']).
-        :param default: Default value if the key is missing.
-        :return: Dictionary value from the feature dictionary.
-        """
-        val = self.get_value(feature, key, default)
-        assert isinstance(val, dict)
-        return val
-
-    def get_file_path(
-        self,
-        feature: str,
-        key: Union[list[str], str],
-        default: Optional[str] = None,
-        just_standard_lib: bool = False,
-    ) -> str:
-        """Get a file path value from the feature dictionary.
-
-        :param feature: Feature name.
-        :param key: Item key or key path as a list (e.g., ['grp1', 'grp2', 'key']).
-        :param default: Default value if the key is missing.
-        :param just_standard_lib: Use only standard library files (no restricted data or addons).
-        :return: File path value for the device.
-        """
-        file_name = self.get_str(feature, key, default)
-        return self.device.create_file_path(file_name, just_standard_lib)
-
 
 class Revisions(list[Features]):
     """List of device revisions.
 
     This class extends the built-in list to store and manage device revision Features.
     """
-
-    def revision_names(self, append_latest: bool = False) -> list[str]:
-        """Get a list of revision names.
-
-        :param append_latest: If True, append "latest" to the list of revision names.
-        :return: List of all supported device revision names.
-        """
-        ret = [rev.name for rev in self]
-        if append_latest:
-            ret.append("latest")
-        return ret
 
     def get(self, name: Optional[str] = None) -> Features:
         """Get the revision by its name.
@@ -305,7 +205,11 @@ class UsbId:
         :param obj: Object to compare with
         :return: True if obj is a UsbId instance with matching vid and pid, False otherwise
         """
-        return isinstance(obj, self.__class__) and self.vid == obj.vid and self.pid == obj.pid
+        return (
+            isinstance(obj, self.__class__)
+            and self.vid == obj.vid
+            and self.pid == obj.pid
+        )
 
     def update(self, usb_config: dict) -> None:
         """Update the USB ID from a configuration dictionary.
@@ -438,7 +342,7 @@ class MemBlock:
         """
         ret = self.name + ":\n"
         ret += f"  Base:     0x{self.base_address:08X}\n"
-        ret += f"  Size:     {size_fmt(self.size,use_kibibyte=True)}\n"
+        ret += f"  Size:     {size_fmt(self.size, use_kibibyte=True)}\n"
         ret += f"  External: {self.external}"
         return ret
 
@@ -467,7 +371,9 @@ class MemBlock:
         return value_to_bool(self.description.get("external", False))
 
     @classmethod
-    def parse_name(cls, name: str) -> tuple[Optional[str], str, Optional[int], Optional[bool]]:
+    def parse_name(
+        cls, name: str
+    ) -> tuple[Optional[str], str, Optional[int], Optional[bool]]:
         """Parse name to base elements.
 
         :param name: Name of the memory block.
@@ -498,7 +404,9 @@ class MemBlock:
             raw_name = name[ix + 1 : ix_2nd]
             raw_security = name[ix_2nd + 1 :]
             if raw_security not in cls.SECURITY:
-                raise SPSDKError(f"Invalid security flag in memory block name: {raw_security}")
+                raise SPSDKError(
+                    f"Invalid security flag in memory block name: {raw_security}"
+                )
         else:
             raise SPSDKError(f"Database memory block parse name failed on: {name}")
         regex = re.compile(r"(?P<value>[a-zA-Z\-]+)(?P<instance>\d+)?")
@@ -538,36 +446,6 @@ class MemBlock:
         _, _, _, sec_acc = self.parse_name(self.name)
         return sec_acc
 
-    @classmethod
-    def create_name(
-        cls,
-        block_name: str,
-        core: Optional[str] = None,
-        instance: Optional[int] = None,
-        secure_access: Optional[bool] = None,
-    ) -> str:
-        """Create full name of memory block.
-
-        :param block_name: Name of memory block
-        :param core: Optional core name, defaults to None
-        :param instance: Optional instance, defaults to None
-        :param secure_access: Optional specification if block has secure or non secure access, defaults to None
-        :return: Full block name.
-        """
-        ret = ""
-        if core:
-            if core not in cls.CORES:
-                raise SPSDKError(
-                    f"Cannot create full memory block name cause unknown core name: {core}"
-                )
-            ret = core + "_"
-        ret += block_name
-        if instance is not None:
-            ret += str(instance)
-        if secure_access is not None:
-            ret += "_s" if secure_access else "_ns"
-        return ret
-
 
 class MemMap:
     """Device memory map configuration."""
@@ -585,22 +463,6 @@ class MemMap:
             ret += str(block) + "\n"
         return ret
 
-    def get_table(self) -> str:
-        """Get string table with memory map description."""
-        table_p = prettytable.PrettyTable(["#", "Block", "Base", "Size", "External"])
-        table_p.set_style(prettytable.TableStyle.DOUBLE_BORDER)
-        for i, block in enumerate(self._mem_map.values()):
-            table_p.add_row(
-                [
-                    str(i),
-                    block.name,
-                    f"0x{block.base_address:08X}",
-                    size_fmt(block.size, use_kibibyte=True),
-                    block.external,
-                ]
-            )
-        return str(table_p)
-
     @classmethod
     def load(cls, mem_map: dict[str, dict[str, Any]]) -> Self:
         """Loads the Memory map from configuration.
@@ -611,38 +473,6 @@ class MemMap:
         for k, v in mem_map.items():
             ret[k] = MemBlock(name=k, desc=v)
         return cls(ret)
-
-    def get_memory(
-        self,
-        block_name: str,
-        core: Optional[str] = None,
-        instance: Optional[int] = None,
-        secure: Optional[bool] = None,
-    ) -> MemBlock:
-        """Get the one memory block by parameters.
-
-        :param block_name: Core block name
-        :param core: Optional core name, defaults to None
-        :param instance: Optional instance, defaults to None
-        :param secure: optional selection of secure non secure memory access, defaults to False
-        :return: Memory block if available
-        :raises: SPSDKError in case that block is not found.
-        """
-        # First try:
-        name = MemBlock.create_name(
-            block_name=block_name, core=core, instance=instance, secure_access=secure
-        )
-        if name in self._mem_map:
-            return self._mem_map[name]
-
-        # Second Try - MAybe we have stored memory as none secure
-        if secure is None:
-            name = MemBlock.create_name(
-                block_name=block_name, core=core, instance=instance, secure_access=False
-            )
-            if name in self._mem_map:
-                return self._mem_map[name]
-        raise SPSDKError("Block has not been found")
 
 
 class IspCfg:
@@ -678,10 +508,6 @@ class IspCfg:
         """Update the object from configuration."""
         self.rom.update(config.get("rom", {}))
         self.flashloader.update(config.get("flashloader", {}))
-
-    def is_protocol_supported(self, protocol: str) -> bool:
-        """Returns true is any of interfaces supports given protocol."""
-        return self.rom.protocol == protocol or self.flashloader.protocol == protocol
 
     def get_usb_ids(self, protocol: str) -> list[UsbId]:
         """Get the usb params for interfaces supporting given protocol."""
@@ -753,7 +579,9 @@ class DeviceInfo:
             "spsdk_predecessor_name", self.spsdk_predecessor_name
         )
         self.web = config.get("web", self.web)
-        self.memory_map = MemMap.load(config.get("memory_map", self.memory_map._mem_map))
+        self.memory_map = MemMap.load(
+            config.get("memory_map", self.memory_map._mem_map)
+        )
         self.isp.update(config.get("isp", {}))
 
 
@@ -922,7 +750,9 @@ class Device:
                 f"The latest revision defined in database for {name} is not in supported revisions"
             )
 
-        ret = Device(name=name, db=db, info=dev_info, latest_rev=latest, device_alias=None)
+        ret = Device(
+            name=name, db=db, info=dev_info, latest_rev=latest, device_alias=None
+        )
 
         for rev, rev_updates in dev_revisions.items():
             features = deepcopy(dev_features)
@@ -930,7 +760,12 @@ class Device:
             if rev_specific_features:
                 deep_update(features, rev_specific_features)
             revisions.append(
-                Features(name=rev, is_latest=bool(rev == latest), features=features, device=ret)
+                Features(
+                    name=rev,
+                    is_latest=bool(rev == latest),
+                    features=features,
+                    device=ret,
+                )
             )
 
         ret.revisions = revisions
@@ -995,20 +830,6 @@ class Devices:
         """Get the list of devices names."""
         return [dev.name for dev in self.devices]
 
-    def feature_items(self, feature: str, key: str) -> Iterator[tuple[str, str, Any]]:
-        """Iter the whole database for the feature items.
-
-        :return: Tuple of Device name, revision name and items value.
-        """
-        for device in self.devices:
-            if feature not in device.features_list:
-                continue
-            for rev in device.revisions:
-                value = rev.features[feature].get(key)
-                if value is None:
-                    raise SPSDKValueError(f"Missing item '{key}' in feature '{feature}'!")
-                yield (device.name, rev.name, value)
-
     def _load_and_append_device(self, dev_name: str) -> None:
         """Load and append device to the devices."""
         # Omit already loaded devices (used for multiple calls of this method (restricted data))
@@ -1057,22 +878,6 @@ class DeviceQuickInfo:
         """List of all supported features of device."""
         return list(self.features.keys())
 
-    def is_feature_supported(self, feature: str, sub_feature: Optional[str] = None) -> bool:
-        """Return True if the feature is supported by devices.
-
-        :param feature: Feature name
-        :param sub_feature: Sub feature name to better granularity, defaults to None
-        :return: True if the feature is supported by devices, False otherwise.
-        """
-        if feature in self.features:
-            if sub_feature:
-                if self.features[feature] is None:
-                    return False
-                sub_features: list = self.features[feature] or []
-                return sub_feature in sub_features
-            return True
-        return False
-
 
 class DevicesQuickInfo:
     """List of all devices with their quick information."""
@@ -1105,51 +910,6 @@ class DevicesQuickInfo:
         ret.predecessor_lookup = pl
 
         return ret
-
-    def get_feature_list(self, dev_name: str) -> list[str]:
-        """Get features list.
-
-        If device is not used, the whole list of SPSDK features is returned
-
-        :param dev_name: Device name, defaults to None
-        :returns: List of features.
-        """
-        if self.devices == {}:
-            return []
-        return self.devices[dev_name].features_list
-
-    def get_devices_with_feature(
-        self, feature: str, sub_feature: Optional[str] = None
-    ) -> list[str]:
-        """Get the list of all device names that supports requested feature.
-
-        :param feature: Name of feature
-        :param sub_feature: Optional sub feature to better specify the families selection
-        :returns: List of devices that supports requested feature.
-        """
-        devices: list[str] = []
-        for name, info in self.devices.items():
-            if info.is_feature_supported(feature, sub_feature):
-                devices.append(name)
-
-        devices.sort()
-        return devices
-
-    def get_predecessors(self, devices: list[str]) -> dict[str, str]:
-        """Get the list of devices predecessors in previous SPSDK versions.
-
-        :param devices: List of current devices names.
-        :returns: Dictionary of predecessors SPSDK devices names.
-        """
-        pr_names: dict[str, str] = {}
-        for dev in devices:
-            d = dev.casefold()
-            pr_name = self.devices[d].info.spsdk_predecessor_name
-            if pr_name is not None and pr_name not in pr_names:
-                assert isinstance(pr_name, str)
-                pr_names[pr_name] = d
-
-        return pr_names
 
     def is_predecessor_name(self, device: str) -> bool:
         """Check if device name is predecessor SPSDK device name.
@@ -1197,7 +957,9 @@ class FeaturesQuickData:
                     if "mem_types" in ret.features[name]:
                         # remove redundancies
                         ret.features[name]["mem_types"] = list(
-                            set(ret.features[name]["mem_types"] + list(mem_types.keys()))
+                            set(
+                                ret.features[name]["mem_types"] + list(mem_types.keys())
+                            )
                         )
                     else:
                         ret.features[name]["mem_types"] = list(mem_types.keys())
@@ -1208,17 +970,6 @@ class FeaturesQuickData:
     def get_all_features(self) -> list[str]:
         """Return list of all supported features."""
         return list(self.features.keys())
-
-    def get_mem_types(self, feature: str) -> list[str]:
-        """Get supported memory types in individual features per all devices.
-
-        :param feature: Feature name
-        """
-        if feature not in self.features:
-            return []
-        if "mem_types" not in self.features[feature]:
-            return []
-        return self.features[feature]["mem_types"]
 
 
 class QuickDatabase:
@@ -1245,23 +996,6 @@ class QuickDatabase:
         ret = cls()
         ret.devices = DevicesQuickInfo.create(database.devices)
         ret.features_data = FeaturesQuickData.create(database.devices)
-        return ret
-
-    def sort_devices_to_groups(self, devices: list[str]) -> dict[str, list[str]]:
-        """Sort given devices to groups by their purposes.
-
-        :param devices: Input list of devices.
-        :return: Dictionary where the key is name od group and value is list of devices.
-        """
-        ret: dict[str, list[str]] = {}
-        for device in devices:
-            dev_purpose = self.devices.devices[device].info.purpose
-            if dev_purpose not in ret:
-                ret[dev_purpose] = []
-            ret[dev_purpose].append(device)
-
-        for grp in ret.values():
-            grp.sort()
         return ret
 
 
@@ -1300,7 +1034,9 @@ class Database:
                             restricted_data_path=restricted_data_path,
                             addons_data_path=addons_data_path,
                         )
-                        logger.debug(f"Current database finger print hash: {db_hash.hex()}")
+                        logger.debug(
+                            f"Current database finger print hash: {db_hash.hex()}"
+                        )
 
                         if db_hash != loaded_db_data.db_hash:
                             loaded_db_data = None
@@ -1309,7 +1045,9 @@ class Database:
                             )
                             os.remove(db_cache_file_name)
                         else:
-                            logger.debug(f"Loaded database from cache: {db_cache_file_name}")
+                            logger.debug(
+                                f"Loaded database from cache: {db_cache_file_name}"
+                            )
                             self.db_hash = db_hash
                     except (
                         SPSDKError,
@@ -1330,9 +1068,13 @@ class Database:
                 if os.path.exists(r_defaults_path):
                     defaults_path = r_defaults_path
 
-            self.cfg_cache: dict[str, Any] = loaded_db_data.cfg_cache if loaded_db_data else {}
+            self.cfg_cache: dict[str, Any] = (
+                loaded_db_data.cfg_cache if loaded_db_data else {}
+            )
             self.defaults = (
-                loaded_db_data.defaults if loaded_db_data else load_configuration(defaults_path)
+                loaded_db_data.defaults
+                if loaded_db_data
+                else load_configuration(defaults_path)
             )
 
         def make_cache(self) -> None:
@@ -1386,7 +1128,9 @@ class Database:
             data_folder = path.lower()
             cache_name = (
                 "db_data_"
-                + get_hash(data_folder.encode(), algorithm=EnumHashAlgorithm.SHA1)[:6].hex()
+                + get_hash(data_folder.encode(), algorithm=EnumHashAlgorithm.SHA1)[
+                    :6
+                ].hex()
                 + "_"
                 + str(spsdk.version)
                 + ".cache"
@@ -1455,7 +1199,9 @@ class Database:
         if complete_load:
             self._devices.load_devices_from_path(os.path.join(path, "devices"))
             if restricted_data_path:
-                self._devices.load_devices_from_path(os.path.join(restricted_data_path, "devices"))
+                self._devices.load_devices_from_path(
+                    os.path.join(restricted_data_path, "devices")
+                )
 
         # optional Database hash that could be used for identification of consistency
         self.db_hash = bytes()
@@ -1464,18 +1210,6 @@ class Database:
     def devices(self) -> Devices:
         """Get the list of devices stored in the database."""
         return self._devices
-
-    def get_defaults(self, feature: str) -> dict[str, Any]:
-        """Gets feature defaults.
-
-        :param feature: Feature name
-        :return: Dictionary with feature defaults.
-        """
-        features = self._data.defaults["features"]
-        if feature not in features:
-            raise SPSDKValueError(f"Invalid feature requested: {feature}")
-
-        return deepcopy(features[feature])
 
     def get_device_features(
         self,
@@ -1534,7 +1268,9 @@ class Database:
         :param feature: Requested feature.
         :return: Loaded dictionary of JSON Schema file.
         """
-        path = self.get_data_file_path(os.path.join("jsonschemas", f"sch_{feature}.yaml"))
+        path = self.get_data_file_path(
+            os.path.join("jsonschemas", f"sch_{feature}.yaml")
+        )
         return DatabaseManager().db.load_db_cfg_file(path)
 
     def get_common_data_file_path(self, path: str) -> str:
@@ -1616,7 +1352,7 @@ class FeaturesEnum(SpsdkEnum):
 class DatabaseManager:
     """Main SPSDK database manager implementing singleton pattern."""
 
-    _instance = None
+    _instance: Optional["DatabaseManager"] = None
     _db: Optional[Database] = None
     _quick_info: Optional[QuickDatabase] = None
 
@@ -1656,7 +1392,9 @@ class DatabaseManager:
             return None
         database_path = os.path.join(SPSDK_RESTRICTED_DATA_FOLDER, "data")
         if not os.path.exists(database_path):
-            logger.error(f"The restricted data doesn't contain data folder: {database_path}")
+            logger.error(
+                f"The restricted data doesn't contain data folder: {database_path}"
+            )
             return None
         return database_path
 
@@ -1667,7 +1405,9 @@ class DatabaseManager:
         :return: Database cache file name.
         """
         cache_folder = get_spsdk_cache_dirname()
-        return os.path.join(cache_folder, f"db_quick_info_{spsdk.version}.cache")
+        return os.path.join(
+            cache_folder, f"db_quick_info_{spsdk.version}.cache"
+        )
 
     @classmethod
     def _get_quick_info_db(cls) -> QuickDatabase:
@@ -1728,12 +1468,7 @@ class DatabaseManager:
         :return: SPSDK_Database object
         """
         if cls._instance:
-            return cls._instance
-        spsdk_logger.install(
-            level=logging.DEBUG if SPSDK_DEBUG_DB else logging.WARNING,
-            logger=logger,
-            create_debug_logger=False,
-        )
+            return cls._instance  # type:ignore[return-value]
         cls._instance = super(DatabaseManager, cls).__new__(cls)
         cls._quick_info = cls._get_quick_info_db()
         return cls._instance
@@ -1854,25 +1589,6 @@ def get_db(
     return DatabaseManager().db.get_device_features(device, revision)
 
 
-def get_device(device: str) -> Device:
-    """Get device database object.
-
-    :param device: The device name.
-    :return: The device data.
-    """
-    return DatabaseManager().db.devices.get(device)
-
-
-def get_families(feature: str, sub_feature: Optional[str] = None) -> list[str]:
-    """Get the list of all family names that supports requested feature.
-
-    :param feature: Name of feature.
-    :param sub_feature: Optional sub feature name to specify the more precise selection.
-    :return: List of devices that supports requested feature.
-    """
-    return DatabaseManager().quick_info.devices.get_devices_with_feature(feature, sub_feature)
-
-
 def get_schema_file(feature: str) -> dict[str, Any]:
     """Get JSON Schema file name for the requested feature.
 
@@ -1892,11 +1608,3 @@ def get_common_data_file_path(path: str) -> str:
     :return: Final absolute path to data file.
     """
     return DatabaseManager().db.get_common_data_file_path(path)
-
-
-def get_whole_db() -> Database:
-    """Get loaded main Database.
-
-    :return: The loaded main Database object.
-    """
-    return DatabaseManager().db

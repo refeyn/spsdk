@@ -1,11 +1,13 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-#
-# Copyright 2023 NXP
-#
-# SPDX-License-Identifier: BSD-3-Clause
+# -----------------------------------------------------------------------------------------------------
+# Copyright (C) Refeyn Ltd - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+# URL: https://www.refeyn.com
+# -----------------------------------------------------------------------------------------------------
 
 """Generic commands implementation."""
+
 from abc import ABC, abstractmethod
 
 

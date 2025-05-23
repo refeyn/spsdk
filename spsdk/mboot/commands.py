@@ -20,6 +20,7 @@ from spsdk.utils.spsdk_enum import SpsdkEnum
 # McuBoot Commands and Responses Tags
 ########################################################################################################################
 
+
 # fmt: off
 class CommandTag(SpsdkEnum):
     """McuBoot Commands."""
@@ -56,16 +57,11 @@ class CommandTag(SpsdkEnum):
     CONFIGURE_I2C = (0xC1, "ConfigureI2c", "Configure I2C")
     CONFIGURE_SPI = (0xC2, "ConfigureSpi", "Configure SPI")
     CONFIGURE_CAN = (0xC3, "ConfigureCan", "Configure CAN")
-
-
-
 class CommandFlag(SpsdkEnum):
     """Flags for McuBoot commands."""
 
     NONE           = (0, "NoFlags", "No flags specified")
     HAS_DATA_PHASE = (1, "DataPhase", "Command has a data phase")
-
-
 
 class ResponseTag(SpsdkEnum):
     """McuBoot Responses to Commands."""
@@ -78,114 +74,6 @@ class ResponseTag(SpsdkEnum):
     KEY_BLOB_RESPONSE           = (0xB3, "CreateKeyBlobResponse", "Create Key Blob")
     KEY_PROVISIONING_RESPONSE   = (0xB5, "KeyProvisioningResponse", "Key Provisioning Response")
     TRUST_PROVISIONING_RESPONSE = (0xB6, "TrustProvisioningResponse", "Trust Provisioning Response")
-
-
-class KeyProvOperation(SpsdkEnum):
-    """Type of key provisioning operation."""
-
-    ENROLL              = (0, "Enroll", "Enroll Operation")
-    SET_USER_KEY        = (1, "SetUserKey", "Set User Key Operation")
-    SET_INTRINSIC_KEY   = (2, "SetIntrinsicKey", "Set Intrinsic Key Operation")
-    WRITE_NON_VOLATILE  = (3, "WriteNonVolatile", "Write Non Volatile Operation")
-    READ_NON_VOLATILE   = (4, "ReadNonVolatile", "Read Non Volatile Operation")
-    WRITE_KEY_STORE     = (5, "WriteKeyStore", "Write Key Store Operation")
-    READ_KEY_STORE      = (6, "ReadKeyStore", "Read Key Store Operation")
-
-
-class KeyProvUserKeyType(SpsdkEnum):
-    """Enumeration of supported user keys in PUF. Keys are SoC specific, not all will be supported for the processor."""
-
-    OTFADKEK        = (2, "OTFADKEK", "Key for OTFAD encryption")
-    SBKEK           = (3, "SBKEK", "Key for SB file encryption")
-    PRINCE_REGION_0 = (7, "PRINCE0", "Key for Prince region 0")
-    PRINCE_REGION_1 = (8, "PRINCE1", "Key for Prince region 1")
-    PRINCE_REGION_2 = (9, "PRINCE2", "Key for Prince region 2")
-    PRINCE_REGION_3 = (10, "PRINCE3", "Key for Prince region 3")
-
-    USERKEK         = (11, "USERKEK", "Encrypted boot image key")
-    UDS             = (12, "UDS", "Universal Device Secret for DICE")
-
-
-class GenerateKeyBlobSelect(SpsdkEnum):
-    """Key selector for the generate-key-blob function.
-
-    For devices with SNVS, valid options of [key_sel] are
-    0, 1 or OTPMK: OTPMK from FUSE or OTP(default),
-    2 or ZMK: ZMK from SNVS,
-    3 or CMK: CMK from SNVS,
-    For devices without SNVS, this option will be ignored.
-    """
-
-    OPTMK   = (0, "OPTMK", "OTPMK from FUSE or OTP(default)")
-    ZMK     = (2, "ZMK", "ZMK from SNVS")
-    CMK     = (3, "CMK", "CMK from SNVS")
-
-
-class TrustProvOperation(SpsdkEnum):
-    """Operations supported by Trust Provisioning flow."""
-
-    PROVE_GENUINITY = (0xF4, "ProveGenuinity", "Start the proving genuinity process")
-    ISP_SET_WRAPPED_DATA = (0xF0, "SetWrappedData", "Start processing Wrapped data")
-    """Type of trust provisioning operation."""
-
-    OEM_GEN_MASTER_SHARE        = (0, "OemGenMasterShare", "Enroll Operation")
-    OEM_SET_MASTER_SHARE        = (1, "SetUserKey", "Set User Key Operation")
-    OEM_GET_CUST_CERT_DICE_PUK  = (2, "GetDiceCaPuk", "Get DICE CA public key")
-    HSM_GEN_KEY                 = (3, "HsmGenKey", "HSM gen key")
-    HSM_STORE_KEY               = (4, "HsmStoreKey", "HSM store key")
-    HSM_ENC_BLOCK               = (5, "HsmEncBlock", "HSM Enc block")
-    HSM_ENC_SIGN                = (6, "HsnEncSign", "HSM enc sign")
-    OEM_GET_CUST_DICE_RESPONSE  = (7, "GetDiceResponse", "Get DICE response")
-
-class TrustProvOemKeyType(SpsdkEnum):
-    """Type of oem key type definition."""
-
-    MFWISK      = (0xC3A5, "MFWISK", "ECDSA Manufacturing Firmware Signing Key")
-    MFWENCK     = (0xA5C3, "MFWENCK", "CKDF Master Key for Manufacturing Firmware Encryption Key")
-    GENSIGNK    = (0x5A3C, "GENSIGNK", "Generic ECDSA Signing Key")
-    GETCUSTMKSK = (0x3C5A, "GETCUSTMKSK", "CKDF Master Key for Production Firmware Encryption Key")
-
-
-class TrustProvKeyType(SpsdkEnum):
-    """Type of key type definition."""
-
-    CKDFK = (1, "CKDFK", "CKDF Master Key")
-    HKDFK = (2, "HKDFK", "HKDF Master Key")
-    HMACK = (3, "HMACK", "HMAC Key")
-    CMACK = (4, "CMACK", "CMAC Key")
-    AESK  = (5, "AESK", "AES Key")
-    KUOK  = (6, "KUOK", "Key Unwrap Only Key")
-
-
-class TrustProvWrappingKeyType(SpsdkEnum):
-    """Type of wrapping key type definition."""
-
-    INT_SK = (0x10, "INT_SK", "The wrapping key for wrapping of MFG_CUST_MK_SK0_BLOB")
-    EXT_SK = (0x11, "EXT_SK", "The wrapping key for wrapping of MFG_CUST_MK_SK0_BLOB")
-
-
-class TrustProvWpc(SpsdkEnum):
-    """Type of WPC trusted facility commands for DSC."""
-
-    WPC_GET_ID              = (0x5000000, "wpc_get_id", "WPC get ID")
-    NXP_GET_ID              = (0x5000001, "nxp_get_id", "NXP get ID")
-    WPC_INSERT_CERT         = (0x5000002, "wpc_insert_cert", "WPC insert certificate")
-    WPC_SIGN_CSR            = (0x5000003, "wpc_sign_csr", "WPC sign CSR")
-
-
-class TrustProvDevHsmDsc(SpsdkEnum):
-    """Type of DSC Device HSM."""
-
-    DSC_HSM_CREATE_SESSION  = (0x6000000, "dsc_hsm_create_session", "DSC HSM create session")
-    DSC_HSM_ENC_BLK         = (0x6000001, "dsc_hsm_enc_blk", "DSC HSM encrypt bulk")
-    DSC_HSM_ENC_SIGN        = (0x6000002, "dsc_hsm_enc_sign", "DSC HSM sign")
-
-
-class EL2GOCommandGroup(SpsdkEnum):
-    """EL2GO command group."""
-
-    EL2GO_GET_FW_VERSION    = (0x1, "el2go_get_version", "EL2GO Get Version")
-    EL2GO_CLOSE_DEVICE      = (0x2, "el2go_close_device", "EL2GO Close Device")
 
 # fmt: on
 
@@ -241,7 +129,9 @@ class CmdHeader:
         :raises McuBootError: Invalid data format
         """
         if len(data) < 4:
-            raise McuBootError(f"Invalid format of RX packet (data length is {len(data)} bytes)")
+            raise McuBootError(
+                f"Invalid format of RX packet (data length is {len(data)} bytes)"
+            )
         return cls(*unpack_from("4B", data, offset))
 
 
@@ -319,7 +209,7 @@ class CmdResponse(CmdResponseBase):
     @property
     def value(self) -> int:
         """Return a integer representation of the response."""
-        return unpack_from(">I", self.raw_data)[0]
+        return unpack_from(">I", self.raw_data)[0]  # type:ignore[no-any-return]
 
     def _get_status_label(self) -> str:
         return (

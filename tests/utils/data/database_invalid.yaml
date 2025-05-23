@@ -1,9 +1,0 @@
-# Copyright 2023-2024 NXP
-#
-# SPDX-License-Identifier: BSD-3-Clause
-
-devices:
-  lpc55s6x:
-    revisions:
-      0a: lpc55s6x_0a.json
-    latest: 1a
