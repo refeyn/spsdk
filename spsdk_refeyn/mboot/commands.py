@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 #
 # Copyright 2016-2018 Martin Olejar
-# Copyright 2019-2024 NXP
+# Copyright 2019-2025 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -10,6 +10,8 @@
 
 from struct import pack, unpack, unpack_from
 from typing import Optional, Type
+
+from typing_extensions import Self
 
 from spsdk_refeyn.mboot.error_codes import StatusCode
 from spsdk_refeyn.mboot.exceptions import McuBootError
@@ -115,17 +117,20 @@ class CmdHeader:
             f"reserved={self.reserved}, params_count={self.params_count})"
         )
 
-    def to_bytes(self) -> bytes:
-        """Serialize header into bytes."""
+    def export(self) -> bytes:
+        """Export the command header to bytes.
+
+        :return: Exported command header as bytes
+        """
         return pack("4B", self.tag, self.flags, self.reserved, self.params_count)
 
     @classmethod
-    def from_bytes(cls, data: bytes, offset: int = 0) -> "CmdHeader":
-        """Deserialize header from bytes.
+    def parse(cls, data: bytes, offset: int = 0) -> Self:
+        """Parse header from bytes.
 
         :param data: Input data in bytes
         :param offset: The offset of input data
-        :return: De-serialized CmdHeader object
+        :return: Parsed CmdHeader object
         :raises McuBootError: Invalid data format
         """
         if len(data) < 4:
@@ -174,14 +179,14 @@ class CmdPacket(CmdPacketBase):
             f", P[{n}]=0x{param:08X}" for n, param in enumerate(self.params)
         )
 
-    def to_bytes(self, padding: bool = True) -> bytes:
-        """Serialize CmdPacket into bytes.
+    def export(self, padding: bool = True) -> bytes:
+        """Export CmdPacket into bytes.
 
         :param padding: If True, add padding to specific size
-        :return: Serialized object into bytes
+        :return: Exported object into bytes
         """
         self.header.params_count = len(self.params)
-        data = self.header.to_bytes()
+        data = self.header.export()
         data += pack(f"<{self.header.params_count}I", *self.params)
         if padding and len(data) < self.SIZE:
             data += bytes([self.EMPTY_VALUE] * (self.SIZE - len(data)))
@@ -399,7 +404,7 @@ def parse_cmd_response(data: bytes, offset: int = 0) -> CmdResponse:
 
     :param data: Input data in bytes
     :param offset: The offset of input data
-    :return: De-serialized object from data
+    :return: Parsed command response from data
     """
     known_response: dict[int, Type[CmdResponse]] = {
         ResponseTag.GENERIC.tag: GenericResponse,
@@ -411,7 +416,7 @@ def parse_cmd_response(data: bytes, offset: int = 0) -> CmdResponse:
         ResponseTag.KEY_PROVISIONING_RESPONSE.tag: KeyProvisioningResponse,
         ResponseTag.TRUST_PROVISIONING_RESPONSE.tag: TrustProvisioningResponse,
     }
-    header = CmdHeader.from_bytes(data, offset)
+    header = CmdHeader.parse(data, offset)
     if header.tag in known_response:
         return known_response[header.tag](header, data[CmdHeader.SIZE :])
 

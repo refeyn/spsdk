@@ -18,7 +18,8 @@ from spsdk_refeyn.mboot.commands import CommandTag
 from spsdk_refeyn.mboot.error_codes import StatusCode
 from spsdk_refeyn.mboot.exceptions import McuBootError
 from spsdk_refeyn.mboot.memories import ExtMemPropTags, MemoryRegion
-from spsdk_refeyn.utils.database import DatabaseManager, get_db
+from spsdk_refeyn.utils.database import DatabaseManager
+from spsdk_refeyn.utils.family import FamilyRevision, get_db
 from spsdk_refeyn.utils.misc import Endianness
 from spsdk_refeyn.utils.spsdk_enum import SpsdkEnum
 
@@ -199,6 +200,8 @@ class PropertyTag(SpsdkEnum):
     BOOT_STATUS_REGISTER       = (0x20, "BootStatusRegister", "Boot Status Register")
     FIRMWARE_VERSION           = (0x21, "FirmwareVersion", "Firmware Version")
     FUSE_PROGRAM_VOLTAGE       = (0x22, "FuseProgramVoltage", "Fuse Program Voltage")
+    SHE_FLASH_PARTITION        = (0x24, "SheFlashPartition", "Secure Hardware Extension: Flash Partition")
+    SHE_BOOT_MODE              = (0x25, "SheBootMode", "Secure Hardware Extension: Boot Mode")
     UNKNOWN                    = (0xFF, "Unknown", "Unknown property")
 
 
@@ -473,7 +476,7 @@ class DeviceUidValue(PropertyValueBase):
 
     def to_str(self) -> str:
         """Get stringified property representation."""
-        return " ".join(f"{item:02X}" for item in self.value)
+        return "".join(f"{item:02x}" for item in self.value)
 
 
 class ReservedRegionsValue(PropertyValueBase):
@@ -857,6 +860,8 @@ PROPERTIES: dict[int, dict] = {
             "false_string": "Normal Voltage (1.8 V)",
         },
     },
+    # PropertyTag.SHE_FLASH_PARTITION.tag: {"class": SHEFlashPartition, "kwargs": {}},
+    # PropertyTag.SHE_BOOT_MODE.tag: {"class": SHEBootMode, "kwargs": {}},
     PropertyTag.UNKNOWN.tag: {
         "class": IntListValue,
         "kwargs": {"str_format": "hex"},
@@ -936,7 +941,7 @@ def parse_property_value(
     property_tag: Union[int, PropertyTag],
     raw_values: list[int],
     ext_mem_id: Optional[int] = None,
-    family: Optional[str] = None,
+    family: Optional[FamilyRevision] = None,
 ) -> Optional[PropertyValueBase]:
     """Parse the property value received from the device.
 

@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-# -----------------------------------------------------------------------------------------------------
-# Copyright (C) Refeyn Ltd - All Rights Reserved
-# Unauthorized copying of this file, via any medium is strictly prohibited
-# Proprietary and confidential
-# URL: https://www.refeyn.com
-# -----------------------------------------------------------------------------------------------------
+# -*- coding: utf-8 -*-
+#
+# Copyright 2023,2025 NXP
+#
+# SPDX-License-Identifier: BSD-3-Clause
 
 """Generic commands implementation."""
 
@@ -28,9 +27,9 @@ class CmdPacketBase(ABC):
     """COmmand protocol base."""
 
     @abstractmethod
-    def to_bytes(self, padding: bool = True) -> bytes:
-        """Serialize CmdPacket into bytes.
+    def export(self, padding: bool = True) -> bytes:
+        """Export CmdPacket into bytes.
 
         :param padding: If True, add padding to specific size
-        :return: Serialized object into bytes
+        :return: Exported object into bytes
         """
