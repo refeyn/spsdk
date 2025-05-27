@@ -6,7 +6,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """SDP bulk implementation."""
-
 import logging
 from typing import Optional
 
@@ -119,3 +118,12 @@ class SDPBulkProtocol(SDPProtocolBase):
             raise SPSDKConnectionError("No data were received")
         logger.debug(f"IN [{len(raw_data)}]: {', '.join(f'{b:02X}' for b in raw_data)}")
         return CmdResponse(raw_data[0] == HID_REPORT["HAB"][0], raw_data[1:])
+
+    def configure(self, config: dict) -> None:
+        """Set HID report data.
+
+        :param config: parameters dictionary
+        """
+        if "hid_ep1" in config and "pack_size" in config:
+            HID_REPORT["CMD"] = (0x01, config["pack_size"], config["hid_ep1"])
+            HID_REPORT["DATA"] = (0x02, config["pack_size"], config["hid_ep1"])

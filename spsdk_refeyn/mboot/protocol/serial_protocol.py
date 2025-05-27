@@ -7,7 +7,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """Mboot serial implementation."""
-
 import logging
 import struct
 import time
@@ -303,7 +302,7 @@ class MbootSerialProtocol(MbootProtocolBase):
             # that's why we can't use calc_frame_crc method
             # crc data for ping excludes the last 2B of response data, which holds the CRC from device
             crc_data = struct.pack(
-                f"<BB{len(response_data) - 2}B", header, frame_type, *response_data[:-2]
+                f"<BB{len(response_data) -2}B", header, frame_type, *response_data[:-2]
             )
             crc = self._calc_crc(crc_data)
             if crc != response.crc:

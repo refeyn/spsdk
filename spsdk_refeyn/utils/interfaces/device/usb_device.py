@@ -6,7 +6,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """Low level Hid device."""
-
 import logging
 from typing import Optional
 
@@ -119,7 +118,7 @@ class UsbDevice(DeviceBase):
         if not data:
             logger.debug(f"Cannot read from HID device, error={result}")
             raise SPSDKTimeoutError()
-        return data  # type: ignore[no-any-return]
+        return data
 
     def write(self, data: bytes, timeout: Optional[int] = None) -> None:
         """Send data to device.

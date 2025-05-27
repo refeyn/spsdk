@@ -6,7 +6,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """Low level device base class."""
-
 import logging
 from abc import ABC, abstractmethod
 from types import TracebackType

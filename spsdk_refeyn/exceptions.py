@@ -6,7 +6,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """Base for SPSDK exceptions."""
-
 from typing import Optional
 
 #######################################################################
@@ -36,6 +35,57 @@ class SPSDKValueError(SPSDKError, ValueError):
     """SPSDK standard value error."""
 
 
+class SPSDKTypeError(SPSDKError, TypeError):
+    """SPSDK standard type error."""
+
+
+class SPSDKIOError(SPSDKError, IOError):
+    """SPSDK standard IO error."""
+
+
+class SPSDKNotImplementedError(SPSDKError, NotImplementedError):
+    """SPSDK standard not implemented error."""
+
+
+class SPSDKLengthError(SPSDKError, ValueError):
+    """SPSDK parsing error of any binary.
+
+    Input/output data must be of at least container declared length bytes long.
+    """
+
+
+class SPSDKOverlapError(SPSDKError, ValueError):
+    """Data overlap error."""
+
+
+class SPSDKAlignmentError(SPSDKError, ValueError):
+    """Data improperly aligned."""
+
+
+class SPSDKParsingError(SPSDKError):
+    """Cannot parse binary data."""
+
+
+class SPSDKVerificationError(SPSDKError):
+    """Error caused by verifying object."""
+
+
+class SPSDKCorruptedException(SPSDKError):
+    """Corrupted Exception."""
+
+
+class SPSDKUnsupportedOperation(SPSDKError):
+    """SPSDK unsupported operation error."""
+
+
+class SPSDKSyntaxError(SyntaxError, SPSDKError):
+    """SPSDK syntax error."""
+
+
+class SPSDKFileNotFoundError(FileNotFoundError, SPSDKError):
+    """SPSDK file not found error."""
+
+
 class SPSDKAttributeError(SPSDKError, AttributeError):
     """SPSDK standard attribute error."""
 
@@ -46,3 +96,7 @@ class SPSDKConnectionError(SPSDKError, ConnectionError):
 
 class SPSDKPermissionError(SPSDKError, PermissionError):
     """SPSDK permission error."""
+
+
+class SPSDKIndexError(SPSDKError, IndexError):
+    """SPSDK standard index error."""

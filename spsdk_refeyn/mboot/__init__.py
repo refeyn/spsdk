@@ -12,6 +12,7 @@ from typing import Union
 
 from spsdk_refeyn.mboot.interfaces.uart import MbootUARTInterface
 from spsdk_refeyn.mboot.interfaces.usb import MbootUSBInterface
+from spsdk_refeyn.mboot.mcuboot import McuBoot as McuBoot
 
 MbootDeviceTypes = Union[
     MbootUARTInterface,

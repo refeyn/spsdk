@@ -116,7 +116,7 @@ class Version:
         :param value: Raw integer input
         """
         mark = (value >> 24) & 0xFF
-        self.mark = chr(mark) if 64 < mark < 91 else None  # type: ignore[assignment]
+        self.mark = chr(mark) if 64 < mark < 91 else None  # type: ignore
         self.major = (value >> 16) & 0xFF
         self.minor = (value >> 8) & 0xFF
         self.fixation = value & 0xFF
@@ -142,7 +142,7 @@ class Version:
         :return: Integer representation
         """
         value = self.major << 16 | self.minor << 8 | self.fixation
-        mark = 0 if no_mark or self.mark is None else ord(self.mark) << 24  # type: ignore[arg-type]
+        mark = 0 if no_mark or self.mark is None else ord(self.mark) << 24  # type: ignore
         return value | mark
 
     def to_str(self, no_mark: bool = False) -> str:
@@ -159,7 +159,6 @@ class Version:
 ########################################################################################################################
 # McuBoot Properties
 ########################################################################################################################
-
 
 # fmt: off
 class PropertyTag(SpsdkEnum):
@@ -323,11 +322,7 @@ class IntListValue(PropertyValueBase):
     __slots__ = ("value", "_fmt", "delimiter")
 
     def __init__(
-        self,
-        tag: int,
-        raw_values: list[int],
-        str_format: str = "hex",
-        delimiter: str = ", ",
+        self, tag: int, raw_values: list[int], str_format: str = "hex", delimiter: str = ", "
     ) -> None:
         """Initialize the integer-list-based property object.
 
@@ -563,7 +558,7 @@ class AvailableCommandsValue(PropertyValueBase):
     def to_str(self) -> str:
         """Get stringified property representation."""
         return [
-            cmd_tag.label  # type: ignore[return-value]
+            cmd_tag.label  # type: ignore
             for cmd_tag in CommandTag
             if cmd_tag.tag > 0 and (1 << cmd_tag.tag - 1) & self.value
         ]
@@ -734,6 +729,78 @@ class FuseLockedStatus(PropertyValueBase):
             msg += f"OTP Controller Program Locked Status {count} Register: {register}"
         return msg
 
+    def get_fuses(self) -> list[FuseLock]:
+        """Get list of fuses bitfield objects.
+
+        :return: list of FuseLockBitfield objects
+        """
+        fuses = []
+        for registers in self.fuses:
+            fuses.extend(registers.bitfields)
+        return fuses
+
+
+class SHEFlashPartition(PropertyValueBase):
+    """Class representing SHE Flash Partition property."""
+
+    __slots__ = ("max_keys", "flash_size")
+
+    def __init__(self, tag: int, raw_values: list[int]) -> None:
+        """Initialize the SHE Flash Partition property object.
+
+        :param tag: Property tag, see: `PropertyTag`
+        :param raw_values: List of integers representing the property
+        """
+        super().__init__(tag)
+        self.max_keys = raw_values[0] & 0x03
+        self.flash_size = (raw_values[0] >> 8) & 0x03
+
+    def to_str(self) -> str:
+        """Get stringified property representation."""
+        max_keys_mapping = {
+            0: "0 Keys, CSEc disabled",
+            1: "max 5 Key",
+            2: "max 10 Keys",
+            3: "max 20 Keys",
+        }
+        flash_size_mapping = {
+            0: "64kB",
+            1: "48kB",
+            2: "32kB",
+            3: "0kB",
+        }
+        return (
+            f"{flash_size_mapping[self.flash_size]} EEPROM "
+            f"with {max_keys_mapping[self.max_keys]}"
+        )
+
+
+class SHEBootMode(PropertyValueBase):
+    """Class representing SHE Boot Mode property."""
+
+    __slots__ = ("size", "mode")
+
+    def __init__(self, tag: int, raw_values: list[int]) -> None:
+        """Initialize the SHE Boot Mode property object.
+
+        :param tag: Property tag, see: `PropertyTag`
+        :param raw_values: List of integers representing the property
+        """
+        super().__init__(tag)
+        self.size = raw_values[0] & 0x3FFF_FFFF
+        self.mode = (raw_values[0] >> 30) & 0x03
+
+    def to_str(self) -> str:
+        """Get stringified property representation."""
+        mode_mapping = {0: "Strict Boot", 1: "Serial Boot", 2: "Parallel Boot", 3: "Undefined"}
+        return (
+            f"SHE Boot Mode: {mode_mapping.get(self.mode, 'Unknown')} ({self.mode})\n"
+            f"SHE Boot Size: {size_fmt(self.size // 8)} (0x{self.size:_x})"
+        )
+
+    def __str__(self) -> str:
+        return self.to_str()
+
 
 ########################################################################################################################
 # McuBoot property response parser
@@ -754,10 +821,7 @@ PROPERTIES: dict[int, dict] = {
         "class": IntValue,
         "kwargs": {"str_format": "size"},
     },
-    PropertyTag.FLASH_BLOCK_COUNT.tag: {
-        "class": IntValue,
-        "kwargs": {"str_format": "dec"},
-    },
+    PropertyTag.FLASH_BLOCK_COUNT.tag: {"class": IntValue, "kwargs": {"str_format": "dec"}},
     PropertyTag.AVAILABLE_COMMANDS.tag: {"class": AvailableCommandsValue, "kwargs": {}},
     PropertyTag.CRC_CHECK_STATUS.tag: {
         "class": EnumValue,
@@ -771,19 +835,13 @@ PROPERTIES: dict[int, dict] = {
         "class": EnumValue,
         "kwargs": {"enum": StatusCode, "na_msg": "Unknown Error"},
     },
-    PropertyTag.MAX_PACKET_SIZE.tag: {
-        "class": IntValue,
-        "kwargs": {"str_format": "size"},
-    },
+    PropertyTag.MAX_PACKET_SIZE.tag: {"class": IntValue, "kwargs": {"str_format": "size"}},
     PropertyTag.RESERVED_REGIONS.tag: {"class": ReservedRegionsValue, "kwargs": {}},
     PropertyTag.VALIDATE_REGIONS.tag: {
         "class": BoolValue,
         "kwargs": {"true_string": "ON", "false_string": "OFF"},
     },
-    PropertyTag.RAM_START_ADDRESS.tag: {
-        "class": IntValue,
-        "kwargs": {"str_format": "hex"},
-    },
+    PropertyTag.RAM_START_ADDRESS.tag: {"class": IntValue, "kwargs": {"str_format": "hex"}},
     PropertyTag.RAM_SIZE.tag: {"class": IntValue, "kwargs": {"str_format": "size"}},
     PropertyTag.SYSTEM_DEVICE_IDENT.tag: {
         "class": IntValue,
@@ -828,10 +886,7 @@ PROPERTIES: dict[int, dict] = {
         "class": EnumValue,
         "kwargs": {"enum": StatusCode, "na_msg": "Unknown Error"},
     },
-    PropertyTag.FLASH_PAGE_SIZE.tag: {
-        "class": IntValue,
-        "kwargs": {"str_format": "size"},
-    },
+    PropertyTag.FLASH_PAGE_SIZE.tag: {"class": IntValue, "kwargs": {"str_format": "size"}},
     PropertyTag.IRQ_NOTIFIER_PIN.tag: {"class": IrqNotifierPinValue, "kwargs": {}},
     PropertyTag.PFR_KEYSTORE_UPDATE_OPT.tag: {
         "class": EnumValue,
@@ -860,8 +915,8 @@ PROPERTIES: dict[int, dict] = {
             "false_string": "Normal Voltage (1.8 V)",
         },
     },
-    # PropertyTag.SHE_FLASH_PARTITION.tag: {"class": SHEFlashPartition, "kwargs": {}},
-    # PropertyTag.SHE_BOOT_MODE.tag: {"class": SHEBootMode, "kwargs": {}},
+    PropertyTag.SHE_FLASH_PARTITION.tag: {"class": SHEFlashPartition, "kwargs": {}},
+    PropertyTag.SHE_BOOT_MODE.tag: {"class": SHEBootMode, "kwargs": {}},
     PropertyTag.UNKNOWN.tag: {
         "class": IntListValue,
         "kwargs": {"str_format": "hex"},
@@ -974,7 +1029,7 @@ def parse_property_value(
         property_tag_override = PROPERTY_TAG_OVERRIDE[overridden_series].from_tag(property_tag)
         obj.name = property_tag_override.label
         obj.desc = property_tag_override.description
-    return obj  # type:ignore[no-any-return]
+    return obj
 
 
 def get_property_tag_label(mboot_property: Union[PropertyTag, int]) -> tuple[int, str]:

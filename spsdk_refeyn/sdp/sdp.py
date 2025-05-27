@@ -7,13 +7,13 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """Module implementing the SDP communication protocol."""
-
 import logging
+import math
 from typing import Any, Optional
 
 from spsdk_refeyn.sdp.commands import CmdPacket, CommandTag, ResponseValue
 from spsdk_refeyn.sdp.error_codes import StatusCode
-from spsdk_refeyn.sdp.exceptions import SdpCommandError, SdpConnectionError
+from spsdk_refeyn.sdp.exceptions import SdpCommandError, SdpConnectionError, SdpError
 from spsdk_refeyn.sdp.interfaces import SDPDeviceTypes
 
 logger = logging.getLogger(__name__)
@@ -231,6 +231,40 @@ class SDP:
             return self._read_data(length)
         return None
 
+    def read_safe(
+        self,
+        address: int,
+        length: Optional[int] = None,
+        data_format: int = 32,
+        align_count: bool = False,
+    ) -> Optional[bytes]:
+        """Read value from reg/mem at specified address.
+
+        This method is safe, because is validating input arguments and prevents fault execution.
+
+        :param address: Start address of first register
+        :param length: Count of bytes
+        :param data_format: Register access format 8, 16, 32 bits
+        :param align_count: Align the count to data_format , default False
+        :return: Return bytes if success else None.
+        :raises SdpError: If the address is not properly aligned
+        """
+        if data_format not in [8, 16, 32]:
+            raise SdpError(f"Invalid data format '{data_format}'. Valid options are 8, 16, 32")
+        # Check if start address value is aligned
+        if (address % (data_format // 8)) > 0:
+            raise SdpError(f"Address 0x{address:08X} not aligned to {data_format} bits")
+
+        # if length is not specified, use byte-size of data_format
+        length = length or data_format // 8
+
+        # Align length value if requested
+        if align_count:
+            byte_alignment = data_format // 8
+            length = math.ceil(length / byte_alignment) * byte_alignment
+
+        return self.read(address, length, data_format)
+
     def write(self, address: int, value: int, count: int = 4, data_format: int = 32) -> bool:
         """Write value into reg/mem at specified address.
 
@@ -255,6 +289,53 @@ class SDP:
             return False
         return True
 
+    def write_safe(self, address: int, value: int, count: int = 4, data_format: int = 32) -> bool:
+        """Write value into reg/mem at specified address.
+
+        This method is safe, because is validating input arguments and prevents fault execution.
+
+        :param address: Start address of first register
+        :param value: Register value
+        :param count: Count of bytes (max 4)
+        :param data_format: Register access format 8, 16, 32 bits
+        :return: Return True if success else False.
+        :raises SdpError: If the address is not properly aligned or invalid data_format
+        """
+        if data_format not in [8, 16, 32]:
+            raise SdpError(f"Invalid data format '{data_format}'. Valid options are 8, 16, 32")
+        # Check if start address value is aligned
+        if (address % (data_format // 8)) > 0:
+            raise SdpError(f"Address 0x{address:08X} not aligned to {data_format} bits")
+        # Align count value if doesn't
+        align = count % (data_format // 8)
+        if align > 0:
+            count += (data_format // 8) - align
+        count = min(count, 4)
+
+        return self.write(address, value, count, data_format)
+
+    def write_csf(self, address: int, data: bytes) -> bool:
+        """Write CSF Data at specified address.
+
+        :param address: Start Address
+        :param data: The CSF data in binary format
+        :return: Return True if success else False.
+        """
+        logger.info(f"TX-CMD: WriteCSF(address=0x{address:08X}, length={len(data)})")
+        cmd_packet = CmdPacket(CommandTag.WRITE_CSF, address, 0, len(data))
+        return self._send_data(cmd_packet, data)
+
+    def write_dcd(self, address: int, data: bytes) -> bool:
+        """Write DCD values at specified address.
+
+        :param address: Start Address
+        :param data: The DCD data in binary format
+        :return: Return True if success else False.
+        """
+        logger.info(f"TX-CMD: WriteDCD(address=0x{address:08X}, length={len(data)})")
+        cmd_packet = CmdPacket(CommandTag.WRITE_DCD, address, 0, len(data))
+        return self._send_data(cmd_packet, data)
+
     def write_file(self, address: int, data: bytes) -> bool:
         """Write File/Data at specified address.
 
@@ -265,6 +346,24 @@ class SDP:
         logger.info(f"TX-CMD: WriteFile(address=0x{address:08X}, length={len(data)})")
         cmd_packet = CmdPacket(CommandTag.WRITE_FILE, address, 0, len(data))
         return self._send_data(cmd_packet, data)
+
+    def skip_dcd(self) -> bool:
+        """Skip DCD blob from loaded file.
+
+        :return: Return True if success else False.
+        :raises SdpCommandError: If command failed and the 'cmd_exception' is set to True
+        """
+        logger.info("TX-CMD: Skip DCD")
+        cmd_packet = CmdPacket(CommandTag.SKIP_DCD_HEADER, 0, 0, 0)
+        if not self._process_cmd(cmd_packet):
+            return False
+        status = self._read_status()
+        if status != ResponseValue.SKIP_DCD_HEADER_OK:
+            self._status_code = StatusCode.SKIP_DCD_HEADER_FAILURE
+            if self._cmd_exception:
+                raise SdpCommandError("SkipDcdHeader", self.status_code.tag)
+            return False
+        return True
 
     def jump_and_run(self, address: int) -> bool:
         """Jump to specified address and run code from there.
@@ -285,3 +384,15 @@ class SDP:
         if self._process_cmd(CmdPacket(CommandTag.ERROR_STATUS, 0, 0, 0)):
             return self._read_status()
         return None
+
+    def set_baudrate(self, baudrate: int) -> bool:
+        """Configure the UART baudrate on the device side.
+
+        The default baudrate is 115200.
+
+        :param baudrate: Baudrate to be set
+        :return: Return True if success else False.
+        """
+        logger.info(f"TX-CMD: Set baudrate to: {baudrate}")
+        cmd_packet = CmdPacket(CommandTag.SET_BAUDRATE, baudrate, 0, 0)
+        return self._process_cmd(cmd_packet)

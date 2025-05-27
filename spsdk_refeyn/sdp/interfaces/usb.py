@@ -7,7 +7,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """USB SDP interface implementation."""
-
 from typing import Optional
 
 from typing_extensions import Self

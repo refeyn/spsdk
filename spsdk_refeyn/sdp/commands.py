@@ -97,7 +97,7 @@ class CmdResponse(CmdResponseBase):
     @property
     def value(self) -> int:
         """Return a integer representation of the response."""
-        return unpack_from(">I", self.raw_data)[0]  # type: ignore[no-any-return]
+        return unpack_from(">I", self.raw_data)[0]
 
     def __init__(self, hab: bool, raw_data: bytes):
         """Initialize the response object.

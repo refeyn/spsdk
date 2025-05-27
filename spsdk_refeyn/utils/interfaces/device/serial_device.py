@@ -6,7 +6,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """Low level serial device."""
-
 import logging
 from typing import Optional
 
@@ -74,7 +73,7 @@ class SerialDevice(DeviceBase):
 
         :return: True if device is open, False otherwise.
         """
-        return self._device.is_open  # type: ignore[no-any-return]
+        return self._device.is_open
 
     def open(self) -> None:
         """Open the UART interface.
@@ -122,7 +121,7 @@ class SerialDevice(DeviceBase):
         if not data:
             raise SPSDKTimeoutError()
         logger.debug(f"<{' '.join(f'{b:02x}' for b in data)}>")
-        return data  # type: ignore[no-any-return]
+        return data
 
     def write(self, data: bytes, timeout: Optional[int] = None) -> None:
         """Send data to device.
@@ -154,7 +153,7 @@ class SerialDevice(DeviceBase):
         :raises SPSDKConnectionError: when information can not be collected from device
         """
         try:
-            return self._device.port  # type: ignore[no-any-return]
+            return self._device.port
         except Exception as e:
             raise SPSDKConnectionError(str(e)) from e
 

@@ -6,7 +6,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """SDP serial implementation."""
-
 import logging
 from typing import Optional
 

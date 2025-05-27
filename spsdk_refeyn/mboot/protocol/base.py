@@ -6,7 +6,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """MBoot protocol base."""
-
 from spsdk_refeyn.utils.interfaces.protocol.protocol_base import ProtocolBase
 
 

@@ -6,7 +6,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """Mboot bulk implementation."""
-
 import logging
 from struct import pack, unpack_from
 from typing import Optional, Union

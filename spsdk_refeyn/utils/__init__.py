@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-# -----------------------------------------------------------------------------------------------------
-# Copyright (C) Refeyn Ltd - All Rights Reserved
-# Unauthorized copying of this file, via any medium is strictly prohibited
-# Proprietary and confidential
-# URL: https://www.refeyn.com
-# -----------------------------------------------------------------------------------------------------
+# -*- coding: UTF-8 -*-
+#
+# Copyright 2020-2025 NXP
+#
+# SPDX-License-Identifier: BSD-3-Clause
 
 """Module containing various functions/modules used throughout the SPSDK."""
 
