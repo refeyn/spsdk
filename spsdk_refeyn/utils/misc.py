@@ -618,17 +618,17 @@ def change_endianness(bin_data: bytes) -> bytes:
     data = bytearray(bin_data)
     length = len(data)
     if length == 1:
-        return data
+        return bytes(data)
 
     if length == 2:
         data.reverse()
-        return data
+        return bytes(data)
 
     # The length of 24 bits is not supported yet
     if length == 3:
         raise SPSDKError("Unsupported length (3) for change endianness.")
 
-    return reverse_bytes_in_longs(data)
+    return reverse_bytes_in_longs(bytes(data))
 
 
 class Timeout:
@@ -900,7 +900,7 @@ def split_data(data: Union[bytearray, bytes], size: int) -> Generator[bytes, Non
     :return Generator[bytes]: splitted array
     """
     for i in range(0, len(data), size):
-        yield data[i : i + size]
+        yield bytes(data[i : i + size])
 
 
 def get_hash(text: Union[str, bytes]) -> str:
