@@ -7,9 +7,12 @@
 
 """Customized version scheme for setuptools_scm."""
 
+import logging
+
 from setuptools_scm import ScmVersion
-from setuptools_scm._log import log
 from setuptools_scm.version import no_guess_dev_version
+
+log = logging.getLogger(__name__)
 
 
 def run(version: ScmVersion) -> str:
