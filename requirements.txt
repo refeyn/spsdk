@@ -1,10 +1,10 @@
 crcmod<2
-cryptography<47,>=42.0.0
-filelock>=3.20.0
+cryptography
+filelock
 libusbsio<3,>=2.1.12
-packaging<26,>=23.0
-platformdirs<5,>=3.9.1
+packaging
+platformdirs
 pyserial<4,>=3.1
-setuptools_scm<9
-setuptools>75
-typing-extensions<5
+setuptools_scm
+setuptools
+typing-extensions
